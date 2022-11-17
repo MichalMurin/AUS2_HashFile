@@ -9,7 +9,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 {
     public interface IData<T>: IRecord<T>
     {
-        public BitArray GetHash();
+        public long GetHash();
         public bool MyEquals(T data);
         public T CreateClass();
     }

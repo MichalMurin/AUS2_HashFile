@@ -38,17 +38,25 @@ namespace AUS2_MichalMurin_HashFile
         }
         public bool InsertRecord(T pNew)
         {
-            // TODO vlozit do listu novy record
-            return true;
+            if(ValidCount < BlockFactor)
+            {
+                Records[ValidCount] = pNew;
+                ValidCount++;
+                return true;
+            }
+            throw new IndexOutOfRangeException("Too many record in the block!");
+            //return false;
         }
         //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public void FromByteArray(byte[] pArray)
         {
-            // implementovat este ValidCount!!
+            // precitame si valid count - prve 4 bajty
+
+            this.ValidCount = BitConverter.ToInt32(pArray, 0);
             for (int i = 0; i < BlockFactor; i++)
             {
-                byte[] tmpArray = new byte[(i + 1) * Records[i].GetSize()];
-                Array.Copy(pArray, i * Records[i].GetSize(), tmpArray, 0, (i + 1) * Records[i].GetSize());
+                byte[] tmpArray = new byte[Records[i].GetSize()];
+                Array.Copy(pArray, i * Records[i].GetSize() + sizeof(int), tmpArray, 0, Records[i].GetSize());
                 Records[i].FromByteArray(tmpArray);
             }
             //using (var memStream = new MemoryStream())
@@ -70,7 +78,6 @@ namespace AUS2_MichalMurin_HashFile
             }
             catch (Exception e)
             {
-
                 throw new Exception($"Exception occured while getting size of Block: {e.Message}");
             }
         }
@@ -78,21 +85,14 @@ namespace AUS2_MichalMurin_HashFile
         //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public byte[] ToByteArray()
         {
-            // niekde este dat ValidCount
+            // ValidCount = prve 4 bajty
             List<byte> result = new List<byte>();
+            result.AddRange(BitConverter.GetBytes(ValidCount));
             foreach (var record in Records)
             {
-                result.Concat(record.ToByteArray());
+                result.AddRange(record.ToByteArray());
             }
             return result.ToArray();
-
-
-            //BinaryFormatter bf = new BinaryFormatter();
-            //using (var ms = new MemoryStream())
-            //{
-            //    bf.Serialize(ms, this);
-            //    return ms.ToArray();
-            //}
         }
     }
 }
