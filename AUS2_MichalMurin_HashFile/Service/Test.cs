@@ -36,16 +36,15 @@ namespace AUS2_MichalMurin_HashFile.Service
                 var birthNum = generator.getBirthNum(birthDate);
                 var patient = new Patient(name, surename, birthNum, birthDate, BitConverter.GetBytes(rand.Next(255))[0]);
                 listofPatients.Add(patient);
-                hash.Insert(patient);
+                bool success = hash.Insert(patient);
                 Patient? patient2 = hash.Find(patient);
-                if (patient2 == null || patient2.BirthNum != patient.BirthNum)
+                if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
                     Console.ResetColor();
                 }
             }
-
 
             for (int i = 0; i < 1000; i++)
             {
@@ -68,9 +67,12 @@ namespace AUS2_MichalMurin_HashFile.Service
                         Console.WriteLine("Nepodarilo sa vymazat prvok - TEST ZLYHAL - Delete()");
                         Console.ResetColor();
                     }
-                    listofPatients.RemoveAt(index);
                 }
+                listofPatients.RemoveAt(index);
             }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("KONIEC TESTOVANIA!");
+            Console.ResetColor();
             return true;
         }
     }

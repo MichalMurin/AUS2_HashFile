@@ -55,7 +55,7 @@ namespace AUS2_MichalMurin_HashFile
                 if (pRecord.MyEquals(Records[i]))
                 {
                     // swapnem posledny prvok s tym co chcem vymazat
-                    (Records[i], Records[Records.Count - 1]) = (Records[Records.Count - 1], Records[i]);
+                    (Records[i], Records[ValidCount-1]) = (Records[ValidCount-1], Records[i]);
                     ValidCount--;
                     return true;
                 }
