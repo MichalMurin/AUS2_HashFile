@@ -1,5 +1,6 @@
 ﻿using AUS2_MichalMurin_HashFile.DataStructures;
 using AUS2_MichalMurin_HashFile.Models;
+using AUS2_MichalMurin_HashFile.Service;
 using System;
 using System.Buffers.Binary;
 using System.Security.Cryptography.X509Certificates;
@@ -10,22 +11,24 @@ class Program
 {
     public static int Main()
     {
-        Hashing<Patient> hash = new Hashing<Patient>("TestFile", 5, 10);
-        Patient pat = new Patient("Michal", "Murin", "0003284292", DateTime.Now, 25);
-        hash.Find(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.Insert(pat);
-        hash.ConsoleWriteSequence();
+        Test test = new Test();
+        test.runTest();
 
-        var test = pat.ToByteArray();
-        int size = pat.GetSize();
-        Patient second = new Patient();
-        second.FromByteArray(test);
+        //Hashing<Patient> hash = new Hashing<Patient>("TestFile", 5, 10);
+        //Patient pat1 = new Patient("Michal", "Murin", "0003284292", DateTime.Now.AddYears(-14), 24);
+        //Patient pat2 = new Patient("Natalia", "Murin", "8005328492", DateTime.Now.AddYears(-40), 25);
+        //Patient pat3 = new Patient("Nikola", "Murin", "9953284224", DateTime.Now.AddYears(-5), 26);
+        //Patient pat4 = new Patient("Pavol", "Murin", "0003284272", DateTime.Now.AddYears(-66), 25);
+        //hash.Insert(pat1);
+        //hash.Insert(pat2);
+        //hash.Insert(pat3);
+        //hash.Insert(pat4);
+        //hash.ConsoleWriteSequence();
+        //hash.Find(pat4);
+        //hash.Delete(pat4);
+        //hash.Find(pat4);
+        //hash.ConsoleWriteSequence();
+
         return 0;
 
 
@@ -47,5 +50,4 @@ class Program
         //}
         //return 0;
     }
-
 }

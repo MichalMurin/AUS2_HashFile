@@ -47,6 +47,22 @@ namespace AUS2_MichalMurin_HashFile
             throw new IndexOutOfRangeException("Too many record in the block!");
             //return false;
         }
+
+        public bool RemoveRecord(T pRecord)
+        {
+            for (int i = 0; i < Records.Count; i++)
+            {
+                if (pRecord.MyEquals(Records[i]))
+                {
+                    // swapnem posledny prvok s tym co chcem vymazat
+                    (Records[i], Records[Records.Count - 1]) = (Records[Records.Count - 1], Records[i]);
+                    ValidCount--;
+                    return true;
+                }
+            }
+            return false;
+            
+        }
         //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public void FromByteArray(byte[] pArray)
         {
