@@ -18,7 +18,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         {
             TotalBlockCount = pBlockCount;
             BlockFactor = pBlockFactor;
-            int size =   new Block<T>(BlockFactor, typeof(T)).GetSize() * TotalBlockCount;
+            int size =   new Block<T>(BlockFactor).GetSize() * TotalBlockCount;
             try
             {
                 File = new FileStream(pFileName,FileMode.OpenOrCreate, FileAccess.ReadWrite);
@@ -88,9 +88,12 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         private (Block<T>, long) FindBlock(T data)
         {
-            Block<T> block = new Block<T>(BlockFactor, data.GetType());
-            long hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
-            var offset = (hash % TotalBlockCount) * block.GetSize();
+            Block<T> block = new Block<T>(BlockFactor);
+            BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
+            var array = new byte[(hash.Length - 1) / 8 + 1];
+            hash.CopyTo(array, 0);
+            var longHash = BitConverter.ToInt64(array, 0);
+            var offset = (longHash % TotalBlockCount) * block.GetSize();
             byte[] blockBytes = new byte[block.GetSize()];
             try
             {
@@ -110,7 +113,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             File.Seek(0, SeekOrigin.Begin);
             for (int i = 0; i < TotalBlockCount; i++)
             {
-                Block<T> block = new Block<T>(BlockFactor, typeof(T));
+                Block<T> block = new Block<T>(BlockFactor);
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {

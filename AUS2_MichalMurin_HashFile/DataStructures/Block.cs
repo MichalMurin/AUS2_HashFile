@@ -14,19 +14,15 @@ namespace AUS2_MichalMurin_HashFile
         public int BlockFactor { get; set; }
         public int ValidCount { get; set; }
         public List<T> Records { get; set; }
-        // Podla mna redundantny atribut, kedze si typ triedy zistim z generika T
-        public Type ClassType { get; set; }
 
-        public Block(int pBlockFactor, Type pClassType)
+        public Block(int pBlockFactor)
         {
             BlockFactor = pBlockFactor;
-            ClassType = pClassType;
             Records = new List<T>(pBlockFactor);
             for (int i = 0; i < pBlockFactor; i++)
             {
                 try
                 {
-                    // TODO vytvorit instanciu triedy podla pClassType - neviem ci mozem vytvarat aj podla T
                     Records.Add(Activator.CreateInstance<T>().CreateClass());
                 }
                 catch (Exception e)
@@ -44,8 +40,8 @@ namespace AUS2_MichalMurin_HashFile
                 ValidCount++;
                 return true;
             }
-            throw new IndexOutOfRangeException("Too many record in the block!");
-            //return false;
+            //throw new IndexOutOfRangeException("Too many record in the block!");
+            return false;
         }
 
         public bool RemoveRecord(T pRecord)
@@ -63,11 +59,9 @@ namespace AUS2_MichalMurin_HashFile
             return false;
             
         }
-        //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public void FromByteArray(byte[] pArray)
         {
             // precitame si valid count - prve 4 bajty
-
             this.ValidCount = BitConverter.ToInt32(pArray, 0);
             for (int i = 0; i < BlockFactor; i++)
             {
@@ -75,14 +69,6 @@ namespace AUS2_MichalMurin_HashFile
                 Array.Copy(pArray, i * Records[i].GetSize() + sizeof(int), tmpArray, 0, Records[i].GetSize());
                 Records[i].FromByteArray(tmpArray);
             }
-            //using (var memStream = new MemoryStream())
-            //{
-            //    var binForm = new BinaryFormatter();
-            //    memStream.Write(pArray, 0, pArray.Length);
-            //    memStream.Seek(0, SeekOrigin.Begin);
-            //    var obj = binForm.Deserialize(memStream);
-            //    return obj;
-            //}
         }
 
         public int GetSize()
@@ -98,17 +84,21 @@ namespace AUS2_MichalMurin_HashFile
             }
         }
 
-        //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public byte[] ToByteArray()
         {
-            // ValidCount = prve 4 bajty
-            List<byte> result = new List<byte>();
-            result.AddRange(BitConverter.GetBytes(ValidCount));
-            foreach (var record in Records)
+            using (MemoryStream stream = new MemoryStream())
             {
-                result.AddRange(record.ToByteArray());
+                using (BinaryWriter writer = new BinaryWriter(stream))
+                {
+                    // prve 4 bajty - ValidCount
+                    writer.Write(ValidCount);
+                    foreach (var record in Records)
+                    {
+                        writer.Write(record.ToByteArray());
+                    }
+                }
+                return stream.ToArray();
             }
-            return result.ToArray();
         }
     }
 }

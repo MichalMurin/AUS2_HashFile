@@ -75,14 +75,9 @@ namespace AUS2_MichalMurin_HashFile.Models
             return false;
         }
 
-        //public BitArray GetHash()
-        //{
-        //    return new BitArray(Encoding.Default.GetBytes(BirthNum));
-        //}
-
-        public long GetHash()
+        public BitArray GetHash()
         {
-            return BitConverter.ToInt64((Encoding.Default.GetBytes(BirthNum)), 0);
+            return new BitArray(Encoding.Default.GetBytes(BirthNum));
         }
 
         public bool MyEquals(Patient data)
@@ -95,7 +90,6 @@ namespace AUS2_MichalMurin_HashFile.Models
             return new Patient();
         }
 
-        //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         // [<dlzka mena>, <dlzka priezviska>, <dlzka rod. cisla>, <pocet hospitalizacii>, <kod poistovne>, <datum narodenia - long ticks>, <meno>, <priezvisko>, <rod cislo>, ...HOSPITALIZACIE]
         public byte[] ToByteArray()
         {
@@ -123,18 +117,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                 }
                 return stream.ToArray();
             }
-
-            //BinaryFormatter bf = new BinaryFormatter();
-            //using (var ms = new MemoryStream())
-            //{
-            //    Name += string.Concat(Enumerable.Repeat("0", MAX_NAME_LENGHT - Name.Length));
-            //    Surename += string.Concat(Enumerable.Repeat("0", MAX_SURENAME_LENGTH - Surename.Length));
-            //    BirthNum += string.Concat(Enumerable.Repeat("0", MAX_BIRTHNUM_LENGHT - BirthNum.Length));
-            //    bf.Serialize(ms, this);
-            //    return ms.ToArray();
-            //}
         }
-        //https://stackoverflow.com/questions/1446547/how-to-convert-an-object-to-a-byte-array-in-c-sharp
         public void FromByteArray(byte[] pArray)
         {
             using (MemoryStream stream = new MemoryStream(pArray))
@@ -160,15 +143,6 @@ namespace AUS2_MichalMurin_HashFile.Models
                     }
                 }
             }
-            //using (var memStream = new MemoryStream())
-            //{
-            //    var binForm = new BinaryFormatter();
-            //    memStream.Write(pArray, 0, pArray.Length);
-            //    memStream.Seek(0, SeekOrigin.Begin);
-            //    var obj = binForm.Deserialize(memStream);
-            //    copy((Patient)obj);
-            //}
-
         }
 
         // v kazdom stringu sa uklada o jeden bajt navyse, pretoze BinaryReader uklada aj dlzku stringu
