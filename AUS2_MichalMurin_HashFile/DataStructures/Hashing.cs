@@ -8,17 +8,14 @@ using System.Collections;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
-    internal class Hashing<T> where T: IData<T>
+    internal abstract class Hashing<T> where T: IData<T>
     {
-        public int TotalBlockCount { get; set; }
         public FileStream File { get; set; }
         public int BlockFactor { get; set; }
 
-        public Hashing(string pFileName, int pBlockFactor, int pBlockCount)
+        public Hashing(string pFileName, int pBlockFactor)
         {
-            TotalBlockCount = pBlockCount;
             BlockFactor = pBlockFactor;
-            int size =   new Block<T>(BlockFactor).GetSize() * TotalBlockCount;
             try
             {
                 File = new FileStream(pFileName,FileMode.OpenOrCreate, FileAccess.ReadWrite);
@@ -89,12 +86,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         private (Block<T>, long) FindBlock(T data)
         {
             Block<T> block = new Block<T>(BlockFactor);
+            int blockSize = block.GetSize();
             BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
-            var array = new byte[(hash.Length - 1) / 8 + 1];
-            hash.CopyTo(array, 0);
-            var longHash = BitConverter.ToInt64(array, 0);
-            var offset = (longHash % TotalBlockCount) * block.GetSize();
-            byte[] blockBytes = new byte[block.GetSize()];
+            var offset = GetOffset(hash, blockSize);
+            byte[] blockBytes = new byte[blockSize];
             try
             {
                 File.Seek(offset, SeekOrigin.Begin);
@@ -108,12 +103,17 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return (block, offset);
         }
 
+        protected abstract long GetOffset(BitArray hash, int blockSize);
+
         public void ConsoleWriteSequence()
         {
             File.Seek(0, SeekOrigin.Begin);
-            for (int i = 0; i < TotalBlockCount; i++)
+            // TODO Otestuj ci sedi pocwt blokov
+            Block<T> block = new Block<T>(BlockFactor);
+            long blockCount = File.Length/block.GetSize();
+            for (long i = 0; i < blockCount; i++)
             {
-                Block<T> block = new Block<T>(BlockFactor);
+                //Block<T> block = new Block<T>(BlockFactor);
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {
