@@ -12,7 +12,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// Rodic vrcholu, pre Root je rodic = null
         /// </summary>
         public TrieNode? Parent { get; set; }
-        //public bool IsExternNode { get; protected set; }
+        public bool IsExternNode { get; protected set; }
 
         /// <summary>
         /// Konstruktor, ktory vytvori vrchol a vlozi do neho data
