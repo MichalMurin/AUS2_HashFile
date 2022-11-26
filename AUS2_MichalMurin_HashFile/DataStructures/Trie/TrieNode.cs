@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
-    internal class TrieNode
+    public class TrieNode
     {
         /// <summary>
         /// Rodic vrcholu, pre Root je rodic = null
@@ -21,5 +21,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         {
             Parent = parent;
         }
+
     }
 }

@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
-    internal abstract class Hashing<T> where T: IData<T>
+    public abstract class Hashing<T> where T: IData<T>
     {
         public FileStream File { get; set; }
         public int BlockFactor { get; set; }
@@ -28,7 +28,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         public T? Find(T data)
         {
-            var result = FindBlock(data);
+            var result = FindBlock(data, OperationType.Find);
             var block = result.Item1;
             for (int i = 0; i < block.Records.Count; i++)
             {
@@ -43,7 +43,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         public bool Insert(T data)
         {
-            var result = FindBlock(data);
+            var result = FindBlock(data, OperationType.Insert);
             var block = result.Item1;
             var offset = result.Item2;
             bool success = block.InsertRecord(data);
@@ -62,9 +62,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return success;
         }
 
+
         public bool Delete(T data)
         {
-            var result = FindBlock(data);
+            var result = FindBlock(data, OperationType.Delete);
             var block = result.Item1;
             var offset = result.Item2;
             bool success = block.RemoveRecord(data);
@@ -83,27 +84,41 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return success;
         }
 
-        private (Block<T>, long) FindBlock(T data)
+        private (Block<T>?, long) FindBlock(T data, OperationType opType)
         {
             Block<T> block = new Block<T>(BlockFactor);
             int blockSize = block.GetSize();
             BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
-            var offset = GetOffset(hash, blockSize);
-            byte[] blockBytes = new byte[blockSize];
-            try
+            if(opType == OperationType.Find || this.GetType() == typeof(StaticHashing<T>))
             {
-                File.Seek(offset, SeekOrigin.Begin);
-                File.Read(blockBytes);
+                var result = GetOffset(hash, blockSize, opType);
+                byte[] blockBytes = new byte[blockSize];
+                try
+                {
+                    File.Seek(result.Item2, SeekOrigin.Begin);
+                    File.Read(blockBytes);
+                }
+                catch (IOException e)
+                {
+                    throw new IOException($"Exception found during reading the file: {e.Message}");
+                }
+                block.FromByteArray(blockBytes);
+                return (block, result.Item2);
             }
-            catch (IOException e)
+            else if (opType == OperationType.Insert)
             {
-                throw new IOException($"Exception found during reading the file: {e.Message}");
+                // v dynamickom hashing zistime ci sa da vlozit, ak ano hned vratime blok , ak nie musime prehashovat a vratit uz novy blok, kde sa data zmestia
+                // vraciame blok v ktorom uz su veci ktore tam maju byt..staci uz iba pridat novo vkladane data
+                return GetOffset(hash, blockSize, opType);
             }
-            block.FromByteArray(blockBytes);
-            return (block, offset);
+            else if (opType == OperationType.Delete)
+            {
+                // TODO ohendlovat ako sa to bude spravat pri delte
+            }
+           
         }
 
-        protected abstract long GetOffset(BitArray hash, int blockSize);
+        protected abstract (Block<T>?, long) GetOffset(BitArray hash, int blockSize, OperationType opType);
 
         public void ConsoleWriteSequence()
         {

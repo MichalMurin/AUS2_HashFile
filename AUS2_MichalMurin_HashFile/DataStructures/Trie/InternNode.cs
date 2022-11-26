@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
-    internal class InternNode: TrieNode
+    public class InternNode: TrieNode
     {
         /// <summary>
         /// Lavy syn vrcholu
@@ -19,7 +19,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 
         public InternNode(TrieNode? parent = null) : base(parent)
         {
-            IsExternNode = false;
             LeftSon = null;
             RightSon = null;
         }

@@ -16,13 +16,13 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             TotalBlockCount = pBlockCount;
         }
 
-        protected override long GetOffset(BitArray hash, int blockSize)
+        protected override (Block<T>?, long) GetOffset(BitArray hash, int blockSize, OperationType opType)
         {
             var array = new byte[(hash.Length - 1) / 8 + 1];
             hash.CopyTo(array, 0);
             var longHash = BitConverter.ToInt64(array, 0);
             var offset = (longHash % TotalBlockCount) * blockSize;
-            return offset;
+            return (null,offset);
         }
     }
 }

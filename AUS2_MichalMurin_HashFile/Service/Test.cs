@@ -23,7 +23,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             {
                 File.Delete(@"TESTING");
             }
-            hash = new Hashing<Patient>("TESTING", blockFactor, blockCount);
+            hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
         }
 
         private Patient getRndPatient()
