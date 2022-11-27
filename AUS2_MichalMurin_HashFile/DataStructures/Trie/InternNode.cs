@@ -17,10 +17,30 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// </summary>
         public TrieNode? RightSon { get; set; }
 
-        public InternNode(TrieNode? parent = null) : base(parent)
+        public InternNode(InternNode? parent = null) : base(parent)
         {
             LeftSon = null;
             RightSon = null;
+        }
+
+        public bool ReplaceSon(TrieNode oldSon, TrieNode newSon)
+        {
+            if(RightSon == oldSon)
+            {
+                RightSon = newSon;
+                newSon.Parent = this;
+                return true;
+            }
+            else if(LeftSon == oldSon)
+            {
+                LeftSon = newSon;
+                newSon.Parent = this;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

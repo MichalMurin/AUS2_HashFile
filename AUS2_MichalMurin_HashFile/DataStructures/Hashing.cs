@@ -25,14 +25,20 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 throw new FieldAccessException($"File {pFileName} is not acceccible!");
             }
         }
-
+        protected (Block<T>, long) FindBlock(T data)
+        {
+            BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
+            var offset = GetOffset(hash);
+            var block = TryReadBlockFromFile(offset);
+            return (block, offset);
+        }
         public T? Find(T data)
         {
-            var result = FindBlock(data, OperationType.Find);
+            var result = FindBlock(data);
             var block = result.Item1;
             for (int i = 0; i < block.Records.Count; i++)
             {
-                if(i < block.ValidCount)
+                if (i < block.ValidCount)
                 {
                     if (data.MyEquals(block.Records[i]))
                         return block.Records[i];
@@ -40,85 +46,42 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
             return default(T);
         }
+        public abstract bool Insert(T data);
 
-        public bool Insert(T data)
+        public abstract bool Delete(T data);
+
+        protected abstract long GetOffset(BitArray hash);
+
+        protected void TryWriteBlockToFile(long offset, Block<T> block)
         {
-            var result = FindBlock(data, OperationType.Insert);
-            var block = result.Item1;
-            var offset = result.Item2;
-            bool success = block.InsertRecord(data);
-            if (success)
+            try
             {
-                try
-                {
-                    File.Seek(offset, SeekOrigin.Begin);
-                    File.Write(block.ToByteArray());
-                }
-                catch (IOException e)
-                {
-                    throw new IOException($"Exception found during writing to file: {e.Message}");
-                }
+                File.Seek(offset, SeekOrigin.Begin);
+                File.Write(block.ToByteArray());
             }
-            return success;
+            catch (IOException e)
+            {
+                throw new IOException($"Exception found during writing to file: {e.Message}");
+            }
         }
 
-
-        public bool Delete(T data)
+        protected Block<T> TryReadBlockFromFile(long offset)
         {
-            var result = FindBlock(data, OperationType.Delete);
-            var block = result.Item1;
-            var offset = result.Item2;
-            bool success = block.RemoveRecord(data);
-            if (success)
+            var block = new Block<T>(BlockFactor) ;
+            var blockSize = block.GetSize();
+            byte[] blockBytes = new byte[blockSize];
+            try
             {
-                try
-                {
-                    File.Seek(offset, SeekOrigin.Begin);
-                    File.Write(block.ToByteArray());
-                }
-                catch (IOException e)
-                {
-                    throw new IOException($"Exception found during writing to file: {e.Message}");
-                }
+                File.Seek(offset, SeekOrigin.Begin);
+                File.Read(blockBytes);
             }
-            return success;
+            catch (IOException e)
+            {
+                throw new IOException($"Exception found during reading the file: {e.Message}");
+            }
+            block.FromByteArray(blockBytes);
+            return block;
         }
-
-        private (Block<T>?, long) FindBlock(T data, OperationType opType)
-        {
-            Block<T> block = new Block<T>(BlockFactor);
-            int blockSize = block.GetSize();
-            BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
-            if(opType == OperationType.Find || this.GetType() == typeof(StaticHashing<T>))
-            {
-                var result = GetOffset(hash, blockSize, opType);
-                byte[] blockBytes = new byte[blockSize];
-                try
-                {
-                    File.Seek(result.Item2, SeekOrigin.Begin);
-                    File.Read(blockBytes);
-                }
-                catch (IOException e)
-                {
-                    throw new IOException($"Exception found during reading the file: {e.Message}");
-                }
-                block.FromByteArray(blockBytes);
-                return (block, result.Item2);
-            }
-            else if (opType == OperationType.Insert)
-            {
-                // v dynamickom hashing zistime ci sa da vlozit, ak ano hned vratime blok , ak nie musime prehashovat a vratit uz novy blok, kde sa data zmestia
-                // vraciame blok v ktorom uz su veci ktore tam maju byt..staci uz iba pridat novo vkladane data
-                return GetOffset(hash, blockSize, opType);
-            }
-            else if (opType == OperationType.Delete)
-            {
-                // TODO ohendlovat ako sa to bude spravat pri delte
-            }
-           
-        }
-
-        protected abstract (Block<T>?, long) GetOffset(BitArray hash, int blockSize, OperationType opType);
 
         public void ConsoleWriteSequence()
         {

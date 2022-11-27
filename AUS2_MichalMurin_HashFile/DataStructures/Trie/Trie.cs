@@ -16,7 +16,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// </summary>
 
         public int BlockSize { get; set; }
-        internal TrieNode? Root { get; private set; }
+        internal InternNode? Root { get; private set; }
 
         /// <summary>
         /// Bezparametricky konstruktor
@@ -24,8 +24,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         public Trie(int pBlockFactor, int pBlockSize)
         {
             Root = new InternNode();
-            ((InternNode)Root).LeftSon = new ExternNode(0, 0, Root);
-            ((InternNode)Root).LeftSon = new ExternNode(pBlockSize*pBlockFactor, 0, Root);
+            Root.LeftSon = new ExternNode(0, 0, Root);
+            Root.LeftSon = new ExternNode(pBlockSize*pBlockFactor, 0, Root);
             BlockFactor = pBlockFactor;
             BlockSize = pBlockSize;
         }
@@ -68,18 +68,18 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// <param name="pData">Hladane data</param>
         /// <returns>hladane data zo stromu</returns>
         /// <exception cref="Exception">Vynimka ak sa data nenachadzaju v strome</exception>
-        public ExternNode? Find(BitArray pData)
-        {
-            var result = FindExternNode(pData);
-            if (result.Item1)
-            {
-                return result.Item2;
-            }
-            else
-            {
-                throw new Exception("No such data in Trie!");
-            }
-        }
+        //public ExternNode? Find(BitArray pData)
+        //{
+        //    var result = FindExternNode(pData);
+        //    if (result.Item1)
+        //    {
+        //        return result.Item2;
+        //    }
+        //    else
+        //    {
+        //        throw new Exception("No such data in Trie!");
+        //    }
+        //}
     }
 }
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using AUS2_MichalMurin_HashFile.DataStructures.Trie;
@@ -11,44 +12,120 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 {
     public class DynamicHashing<T> : Hashing<T> where T : IData<T>
     {
-        public AUS2_MichalMurin_HashFile.DataStructures.Trie.Trie trie { get; set; }
+        public Trie.Trie trie { get; set; }
+        public Queue<long> EmptyBlocks { get; set; }
         public DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {            
             trie = new Trie.Trie(pBlockFactor, new Block<T>(pBlockFactor).GetSize());
+            EmptyBlocks = new Queue<long>();
         }
 
-        protected override (Block<T>?,long) GetOffset(BitArray hash, int blockSize, OperationType opType)
+
+        protected override long GetOffset(BitArray hash)
         {
             var result = trie.FindExternNode(hash);
-            var exNode = result.Item2;
-            if(exNode != null)
+            if (result.Item1)
             {
-                if (opType == OperationType.Find) return (null, exNode.Offset);
-                else if (opType == OperationType.Insert && exNode.RecordsCount < BlockFactor) return (null, exNode.Offset);
-                else if (opType == OperationType.Insert && exNode.RecordsCount >= BlockFactor)
-                {
-                    var blockInfo = AddBlock(exNode, blockSize, result.Item3, hash);
-                    return blockInfo;
-                }
+                return result.Item2!.Offset;
             }
+            else
+                throw new ArgumentException("Hash sa v trie nenasiel!");
 
         }
 
-        private (Block<T>?, long) AddBlock(ExternNode exNode, int blockSize, int currentBit, BitArray newHash)
+        public override bool Insert(T data)
         {
-            var offset = exNode.Offset;
-            byte[] blockBytes = new byte[blockSize];
-            try
+            var hash = data.GetHash();
+            var result = trie.FindExternNode(hash);
+            if (result.Item1)
             {
-                File.Seek(offset, SeekOrigin.Begin);
-                File.Read(blockBytes);
+                var exNode = result.Item2;
+                if (exNode!.RecordsCount >= BlockFactor)
+                {
+                    // Blok uz je plny, musime prehashovat data ktore v nom su a vytvorit novy blok
+                    return TryRehashAndInsertData(hash, data, exNode, result.Item3);
+                }
+                else
+                {
+                    // V bloku je este miesto, data tam jednoducho zapiseme:
+                    var foundBlcokData = FindBlock(data);
+                    var block = foundBlcokData.Item1;
+                    var offset = foundBlcokData.Item2;
+                    bool success = block.InsertRecord(data);
+                    if (success)
+                    {
+                        TryWriteBlockToFile(offset, block);
+                    }
+                    return success;
+                }
             }
-            catch (IOException e)
+            return false;
+
+        }
+        public override bool Delete(T data)
+        {
+            var hash = data.GetHash();
+            var result = trie.FindExternNode(hash);
+            if (result.Item1)
             {
-                throw new IOException($"Exception found during reading the file: {e.Message}");
+                var exNode = result.Item2;
+                var block = TryReadBlockFromFile(exNode!.Offset);
+                bool successfulyDeleted = block.RemoveRecord(data);
+                if (successfulyDeleted)
+                {
+                    exNode.RecordsCount--;
+                    var exNodesbrother = exNode!.GetBrother();
+                    if (exNodesbrother != null && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor)
+                    {
+                        if (exNode.Parent == trie.Root && exNodesbrother.Parent == trie.Root)
+                        {
+                            // nebudeme bloky mergovat, nakolko uz su to posledne dva externe vrcholy v strome
+                            TryWriteBlockToFile(exNode.Offset, block);
+                            return true;
+                        }
+                        else
+                        {
+                            // mozeme sa zlucit s blokom vedla
+                            var blockToMerge = TryReadBlockFromFile(exNodesbrother.Offset);
+                            return MergeBlocks(exNode, block, exNodesbrother, blockToMerge);
+                        }
+                    }
+                    else
+                    {
+                        TryWriteBlockToFile(exNode.Offset, block);
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
             }
-            var FullBlock = new Block<T>(BlockFactor);
-            FullBlock.FromByteArray(blockBytes);
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
+        {            
+            foreach (var rec in secondBlock.Records)
+            {
+                firstBlock.InsertRecord(rec);
+                secondBlock.RemoveRecord(rec);
+            }
+            ExternNode newExternNode = new ExternNode(firstNode.Offset, firstBlock.ValidCount, firstNode.Parent!.Parent);
+            firstNode.Parent.Parent!.ReplaceSon(firstNode.Parent, newExternNode);
+            // TODO - kontrola ci je prazdny blok na konci suboru..ak ano treba zmensit subor
+            EmptyBlocks.Enqueue(secondNode.Offset);
+            TryWriteBlockToFile(newExternNode.Offset, firstBlock);
+            return true;
+
+
+        }
+        private bool TryRehashAndInsertData(BitArray newHash, T data, ExternNode exNode, int currentBit)
+        {
+            var FullBlock = TryReadBlockFromFile(exNode.Offset);
             InternNode inNode;
             ExternNode leftNode;
             ExternNode rightNode;
@@ -69,7 +146,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             while (leftNode.RecordsCount > BlockFactor || rightNode.RecordsCount > BlockFactor)
             {
                 currentBit++;
-                if(leftNode.RecordsCount > BlockFactor)
+                if (leftNode.RecordsCount > BlockFactor)
                 {
                     inNode = new InternNode(leftNode.Parent);
                     ((InternNode)leftNode.Parent!).LeftSon = inNode;
@@ -135,29 +212,34 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     throw new IndexOutOfRangeException("Nepoadarilo sa prehesovat blok, prvok sa nepodarilo vlozit do Dynamickeho hasovacieho suboru!");
                 }
             }
+            long adressForNewBlock;
+            if (!EmptyBlocks.TryDequeue(out adressForNewBlock))
+            {
+                adressForNewBlock = File.Length;
+                File.SetLength(File.Length + FullBlock.GetSize());
+            }
             if (newDataRight)
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
-                File.Seek(exNode.Offset, SeekOrigin.Begin);
-                File.Write(NewLeftBlock.ToByteArray());
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
                 leftNode.Offset = exNode.Offset;
-                // TODO Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                rightNode.Offset = File.Length;
-                return (NewRightBlock, rightNode.Offset);
+                TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
+                // Nastavit adresu podla volneho bloku v manazmente volnych blokov
+                rightNode.Offset = adressForNewBlock;
+                TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
+                return true;
             }
             else
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
-                File.Seek(exNode.Offset, SeekOrigin.Begin);
-                File.Write(NewRightBlock.ToByteArray());
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
                 rightNode.Offset = exNode.Offset;
-                // TODO Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                leftNode.Offset = File.Length;
-                return (NewLeftBlock, leftNode.Offset);
+                TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
+                // Nastavit adresu podla volneho bloku v manazmente volnych blokov
+                leftNode.Offset = adressForNewBlock;
+                TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
+                return true;
             }
         }
-
     }
 }

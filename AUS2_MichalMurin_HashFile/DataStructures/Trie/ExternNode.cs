@@ -11,7 +11,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         public int RecordsCount { get; set; }
         public long Offset { get; set; }
 
-        public ExternNode(long pOffset, int pRecordsCount, TrieNode? parent = null) : base(parent)
+        public ExternNode(long pOffset, int pRecordsCount, InternNode? parent = null) : base(parent)
         {
             Offset = pOffset;
             RecordsCount = pRecordsCount;
@@ -19,6 +19,22 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         public bool IsLeftSon()
         {
             return ((InternNode)Parent!).LeftSon == this;
+        }
+
+        public ExternNode? GetBrother()
+        {
+            if(IsLeftSon() && this.Parent!.RightSon != null && this.Parent.RightSon.GetType() == typeof(ExternNode))
+            {
+                return (ExternNode)this.Parent.RightSon;
+            }
+            else if (!IsLeftSon() && this.Parent!.LeftSon != null && this.Parent.LeftSon.GetType() == typeof(ExternNode))
+            {
+                return (ExternNode)this.Parent.LeftSon;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 

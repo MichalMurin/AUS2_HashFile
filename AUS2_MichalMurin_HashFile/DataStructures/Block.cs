@@ -11,7 +11,7 @@ namespace AUS2_MichalMurin_HashFile
 {
     public class Block<T> : IRecord<T> where T : IData<T>
     {
-        public int BlockFactor { get; set; }
+        public int BlockFactor { get; private set; }
         public int ValidCount { get; set; }
         public List<T> Records { get; set; }
 
