@@ -25,7 +25,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         {
             Root = new InternNode();
             Root.LeftSon = new ExternNode(0, 0, Root);
-            Root.LeftSon = new ExternNode(pBlockSize*pBlockFactor, 0, Root);
+            Root.RightSon = new ExternNode(pBlockSize*pBlockFactor, 0, Root);
             BlockFactor = pBlockFactor;
             BlockSize = pBlockSize;
         }

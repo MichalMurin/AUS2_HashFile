@@ -102,12 +102,18 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     throw;
                 }
                 block.FromByteArray(blockBytes);
+                Console.WriteLine($"ADRESA: {File.Position}");
                 Console.WriteLine($"Blok cislo {i}: Valid count = {block.ValidCount}");
                 foreach (var rec in block.Records)
                 {
                     Console.WriteLine($"\t{rec.ToString()}");
                 }
             }
+        }
+
+        public void DisposeFile()
+        {
+            File.Dispose();
         }
     }
 }

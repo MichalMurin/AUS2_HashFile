@@ -24,6 +24,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                 File.Delete(@"TESTING");
             }
             hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
+            //hash = new DynamicHashing<Patient>("TESTING", blockFactor);
         }
 
         private Patient getRndPatient()

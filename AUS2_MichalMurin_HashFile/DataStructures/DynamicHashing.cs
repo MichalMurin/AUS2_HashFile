@@ -55,6 +55,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     if (success)
                     {
                         TryWriteBlockToFile(offset, block);
+                        exNode.RecordsCount++;
                     }
                     return success;
                 }
@@ -155,8 +156,14 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 else
                 {
                     inNode = new InternNode(rightNode.Parent);
-                    ((InternNode)leftNode.Parent!).RightSon = inNode;
+                    ((InternNode)rightNode.Parent!).RightSon = inNode;
                 }
+                inNode.LeftSon = leftNode;
+                inNode.RightSon = rightNode;
+                leftNode.Parent = inNode;
+                rightNode.Parent = inNode;
+
+
                 leftNode.RecordsCount = 0;
                 rightNode.RecordsCount = 0;
 
@@ -226,6 +233,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
                 rightNode.Offset = adressForNewBlock;
+                NewRightBlock.InsertRecord(data);
                 TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
                 return true;
             }
@@ -237,6 +245,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
                 leftNode.Offset = adressForNewBlock;
+                NewLeftBlock.InsertRecord(data);
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 return true;
             }
