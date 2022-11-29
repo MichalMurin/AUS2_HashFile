@@ -46,7 +46,7 @@ namespace AUS2_MichalMurin_HashFile
 
         public bool RemoveRecord(T pRecord)
         {
-            for (int i = 0; i < Records.Count; i++)
+            for (int i = 0; i < ValidCount; i++)
             {
                 if (pRecord.MyEquals(Records[i]))
                 {

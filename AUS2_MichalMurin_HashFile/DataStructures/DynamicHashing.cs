@@ -109,16 +109,19 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         }
 
         private bool MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
-        {            
-            foreach (var rec in secondBlock.Records)
+        {
+            // prepisovat bloky z toho kde ich je menej tam kde ich je viac
+            for (int i = 0; i < secondBlock.ValidCount; i++)
             {
-                firstBlock.InsertRecord(rec);
-                secondBlock.RemoveRecord(rec);
+                firstBlock.InsertRecord(secondBlock.Records[0]);
+                secondBlock.RemoveRecord(secondBlock.Records[0]);
             }
+
             ExternNode newExternNode = new ExternNode(firstNode.Offset, firstBlock.ValidCount, firstNode.Parent!.Parent);
             firstNode.Parent.Parent!.ReplaceSon(firstNode.Parent, newExternNode);
             // TODO - kontrola ci je prazdny blok na konci suboru..ak ano treba zmensit subor
             EmptyBlocks.Enqueue(secondNode.Offset);
+            TryWriteBlockToFile(secondNode.Offset, secondBlock);
             TryWriteBlockToFile(newExternNode.Offset, firstBlock);
             return true;
 

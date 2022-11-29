@@ -16,7 +16,7 @@ class Program
             File.Delete(@"Test");
         }
 
-        var hash = new DynamicHashing<Patient>("Test", 5);
+        var hash = new DynamicHashing<Patient>("Test", 1);
         var list = new List<Patient>();
         list.Add(new Patient("Michal", "Murin", "0003284292", DateTime.Now, 25));
         list.Add(new Patient("Jozef", "Murin", "9903284292", DateTime.Now, 25));
@@ -28,14 +28,18 @@ class Program
         foreach (var item in list)
         {
             hash.Insert(item);
-            hash.ConsoleWriteSequence();
+           // hash.ConsoleWriteSequence();
         }
+        hash.ConsoleWriteSequence();
+        hash.Delete(list[0]);
+        Console.WriteLine("-------------------------------------------------");
+        hash.ConsoleWriteSequence();
 
 
 
 
         Test test = new Test(100, 1000);
-        test.runTest(1000, 10000, 1);
+         test.runTest(1000, 10000, 1);
         return 0;
     }
 
