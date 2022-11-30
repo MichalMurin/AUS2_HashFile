@@ -77,6 +77,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 {
                     exNode.RecordsCount--;
                     var exNodesbrother = exNode!.GetBrother();
+                    // TODO kontrolovat brata v cykle, nie iba raz!
                     if (exNodesbrother != null && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor)
                     {
                         if (exNode.Parent == trie.Root && exNodesbrother.Parent == trie.Root)
@@ -138,7 +139,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 // zmensim velkost suboru
                 fileLength -= blockSize;
                 // kontrolujem ci neexistuje prazdny blok ktory pred prvotnym zmensenim nebol na konci suboru
-                // dalo by sa to robit efektivnejsie ak by boli adresy zoradene (pouzit BVS??)
+                // TODO dalo by sa to robit efektivnejsie ak by boli adresy zoradene (pouzit BVS??)
                 while (EmptyBlocksOffsetes.Contains(fileLength - blockSize))
                 {
                     fileLength -= blockSize;
