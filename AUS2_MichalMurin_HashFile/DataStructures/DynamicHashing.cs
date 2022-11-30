@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
@@ -13,11 +14,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
     public class DynamicHashing<T> : Hashing<T> where T : IData<T>
     {
         public Trie.Trie trie { get; set; }
-        public Queue<long> EmptyBlocks { get; set; }
+        public List<long> EmptyBlocksOffsetes { get; set; }
         public DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {            
             trie = new Trie.Trie(pBlockFactor, new Block<T>(pBlockFactor).GetSize());
-            EmptyBlocks = new Queue<long>();
+            EmptyBlocksOffsetes = new List<long>();
         }
 
 
@@ -119,11 +120,42 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
             ExternNode newExternNode = new ExternNode(firstNode.Offset, firstBlock.ValidCount, firstNode.Parent!.Parent);
             firstNode.Parent.Parent!.ReplaceSon(firstNode.Parent, newExternNode);
-            // TODO - kontrola ci je prazdny blok na konci suboru..ak ano treba zmensit subor
-            EmptyBlocks.Enqueue(secondNode.Offset);
-            TryWriteBlockToFile(secondNode.Offset, secondBlock);
+            // ak je blok na konci suboru, zmensim subor.. nemalo by sa stat ze by som odstranil inicializcne dva bloky,
+            // pretoze vtedy by som sa nemal dostat ani na vykonanie tejto metody
+            HandleEmptyBlocks(secondBlock, secondNode.Offset);
             TryWriteBlockToFile(newExternNode.Offset, firstBlock);
             return true;
+
+
+        }
+
+        private void HandleEmptyBlocks(Block<T> emptyBlock, long blockOffset)
+        {
+            var blockSize = emptyBlock.GetSize();
+            var fileLength = File.Length;
+            if (fileLength - blockSize == blockOffset)
+            {
+                // zmensim velkost suboru
+                fileLength -= blockSize;
+                // kontrolujem ci neexistuje prazdny blok ktory pred prvotnym zmensenim nebol na konci suboru
+                // dalo by sa to robit efektivnejsie ak by boli adresy zoradene (pouzit BVS??)
+                while (EmptyBlocksOffsetes.Contains(fileLength - blockSize))
+                {
+                    fileLength -= blockSize;
+                    EmptyBlocksOffsetes.Remove(fileLength - blockSize);
+
+                }
+                // prazdne bloky by nemali byt v strome trie, takze ich nemusime odtial odstranovat
+                File.SetLength(fileLength);
+                // ked som zmensil subor, nepotrebujem do neho uz zapisovat prazdny blok
+            }
+            else
+            {
+                // zapisem prazdnu adresu do zoznamu prazdnych blokov
+                EmptyBlocksOffsetes.Add(blockOffset);
+                // prazdny blok zapiseme naspat do suboru, uz s valid count 0
+                TryWriteBlockToFile(blockOffset, emptyBlock);
+            }
 
 
         }
@@ -223,8 +255,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 }
             }
             long adressForNewBlock;
-            if (!EmptyBlocks.TryDequeue(out adressForNewBlock))
+            if (EmptyBlocksOffsetes.Count > 0)
             {
+                // ak mame volnu adresu, berieme adresu zo zoznamu volnych adries
+                adressForNewBlock = EmptyBlocksOffsetes[EmptyBlocksOffsetes.Count - 1];
+                EmptyBlocksOffsetes.RemoveAt(EmptyBlocksOffsetes.Count - 1);
+            }
+            else
+            {
+                // ak nemame volnu adresu, zvacsujeme subor
                 adressForNewBlock = File.Length;
                 File.SetLength(File.Length + FullBlock.GetSize());
             }
