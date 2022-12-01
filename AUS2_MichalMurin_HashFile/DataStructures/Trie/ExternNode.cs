@@ -16,6 +16,12 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             Offset = pOffset;
             RecordsCount = pRecordsCount;
         }
+        public ExternNode(ExternNode otherNode)
+        {
+            RecordsCount = otherNode.RecordsCount;
+            Offset = otherNode.Offset;
+            this.Parent = otherNode.Parent;
+        }
         public bool IsLeftSon()
         {
             return ((InternNode)Parent!).LeftSon == this;

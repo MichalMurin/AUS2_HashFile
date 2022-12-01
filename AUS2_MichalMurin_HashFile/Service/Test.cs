@@ -15,7 +15,7 @@ namespace AUS2_MichalMurin_HashFile.Service
     {
         private Hashing<Patient> hash;
         private DataGenerator generator = new DataGenerator();
-        private Random rand = new Random();
+        private Random rand = new Random(1);
         private HashSet<string> setOfBirthNums = new HashSet<string>();
         public Test(int blockFactor, int blockCount)
         {
@@ -23,8 +23,8 @@ namespace AUS2_MichalMurin_HashFile.Service
             {
                 File.Delete(@"TESTING");
             }
-            hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
-            //hash = new DynamicHashing<Patient>("TESTING", blockFactor);
+            //hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
+            hash = new DynamicHashing<Patient>("TESTING", blockFactor);
         }
 
         private Patient getRndPatient()
@@ -41,19 +41,31 @@ namespace AUS2_MichalMurin_HashFile.Service
             }
         }
 
+        private List<Patient> FillListFromTestFile(int size)
+        {
+            var listofPatients = new List<Patient>(size);
+            var tmp = File.ReadAllLines("patients.csv");
+            for (int i = 0; i < tmp.Length; i++)
+            {
+                var items = tmp[i].Split(";");
+                listofPatients.Add(new Patient(items[0], items[1], items[2], DateTime.Now, 1));
+            }
+            return listofPatients;
+        }
+
         public bool runTest(int initialSize, int numberOfOperations, int step = 0)
         {
+
             Console.WriteLine("START TESTU - testujeme Static hash file o inicializacnej velkosti " + initialSize +
                 " pocet operacii: " + numberOfOperations);
             Stopwatch stopwatchInsert = new Stopwatch();
             Stopwatch stopwatchFind = new Stopwatch();
             Stopwatch stopwatchDelete = new Stopwatch();
-            var listofPatients = new List<Patient>(10000);
-            Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
-            while (listofPatients.Count != initialSize)
+            var listofPatients = FillListFromTestFile(initialSize);
+
+            for (int i = 0; i < initialSize; i++)
             {
-                var patient = getRndPatient();
-                listofPatients.Add(patient);
+                var patient = listofPatients[i];
                 bool success = hash.Insert(patient);
                 Patient? patient2 = hash.Find(patient);
                 if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
@@ -64,7 +76,21 @@ namespace AUS2_MichalMurin_HashFile.Service
                 }
             }
 
-            Console.WriteLine("Subor je naplneny na inicializacnu velkost, zacinam testovat operacie");
+            //var listofPatients = new List<Patient>(initialSize);
+            //Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
+            //while (listofPatients.Count != initialSize)
+            //{
+            //    var patient = getRndPatient();
+            //    listofPatients.Add(patient);
+            //    bool success = hash.Insert(patient);
+            //    Patient? patient2 = hash.Find(patient);
+            //    if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
+            //    {
+            //        Console.ForegroundColor = ConsoleColor.Red;
+            //        Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
+            //        Console.ResetColor();
+            //    }
+            //}
 
             int numberOfInsert = 0;
             int numberOfFind = 0;
@@ -73,6 +99,25 @@ namespace AUS2_MichalMurin_HashFile.Service
             int operationNumber = 0;
             bool result;
             int rndIndex = 0;
+
+            //Console.WriteLine("Subor je naplneny na inicializacnu velkost, zacinam testovat operacie");
+            //for (int i = 0; i < 100000; i++)
+            //{
+            //    rndIndex = rand.Next(0, listofPatients.Count);
+            //    var dataToFind = listofPatients[rndIndex];
+            //    stopwatchFind.Start();
+            //    var item = hash.Find(dataToFind);
+            //    stopwatchFind.Stop();
+            //    numberOfFind++;
+            //    if (item == null || item.BirthNum != dataToFind.BirthNum)
+            //    {
+            //        Console.ForegroundColor = ConsoleColor.Red;
+            //        Console.WriteLine("Nepodarilo sa najst prvok - TEST ZLYHAL - Find()");
+            //        Console.ResetColor();
+            //        return false;
+            //    }
+            //}
+
             for (int i = 0; i < numberOfOperations; i++)
             {
                 for (int j = 0; j < step; j++)

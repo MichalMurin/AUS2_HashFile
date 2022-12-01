@@ -25,23 +25,31 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 throw new FieldAccessException($"File {pFileName} is not acceccible!");
             }
         }
-        protected (Block<T>, long) FindBlock(T data)
+        protected (Block<T>?, long) FindBlock(T data)
         {
             BitArray hash = data.GetHash(); // na zaklade hashu ziskam adresu bloku - zalezi od typu hashovania
             var offset = GetOffset(hash);
-            var block = TryReadBlockFromFile(offset);
-            return (block, offset);
+            if (offset != -1)
+            {
+                var block = TryReadBlockFromFile(offset);
+                return (block, offset);
+            }
+            else
+                return (null, -1);
         }
         public T? Find(T data)
         {
             var result = FindBlock(data);
             var block = result.Item1;
-            for (int i = 0; i < block.Records.Count; i++)
+            if(block != null)
             {
-                if (i < block.ValidCount)
+                for (int i = 0; i < block.Records.Count; i++)
                 {
-                    if (data.MyEquals(block.Records[i]))
-                        return block.Records[i];
+                    if (i < block.ValidCount)
+                    {
+                        if (data.MyEquals(block.Records[i]))
+                            return block.Records[i];
+                    }
                 }
             }
             return default(T);

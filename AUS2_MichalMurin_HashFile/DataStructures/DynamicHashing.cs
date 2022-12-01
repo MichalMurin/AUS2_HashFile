@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using AUS2_MichalMurin_HashFile.DataStructures.Trie;
+using AUS2_MichalMurin_HashFile.Service;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
@@ -41,6 +43,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             if (result.Item1)
             {
                 var exNode = result.Item2;
+                if (exNode.Offset == -1)
+                {
+                    AsignOffsetToNode(exNode);
+                }
                 if (exNode!.RecordsCount >= BlockFactor)
                 {
                     // Blok uz je plny, musime prehashovat data ktore v nom su a vytvorit novy blok
@@ -76,28 +82,39 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 if (successfulyDeleted)
                 {
                     exNode.RecordsCount--;
-                    var exNodesbrother = exNode!.GetBrother();
-                    // TODO kontrolovat brata v cykle, nie iba raz!
-                    if (exNodesbrother != null && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor)
+                    // ak sme syn roota, nebudeme mergovat bloky
+                    if (exNode.Parent == trie.Root)
                     {
-                        if (exNode.Parent == trie.Root && exNodesbrother.Parent == trie.Root)
+                        // tento blok aj ked je prazdny, nechavam ho v subore, iba si jeho adresu zapisem do manazmentu volnych blokov, ak 
+                        // mozu byt v subore zapisane dva prazdne bloky ktore su inicializacne??
+                        if (exNode.RecordsCount == 0)
                         {
-                            // nebudeme bloky mergovat, nakolko uz su to posledne dva externe vrcholy v strome
-                            TryWriteBlockToFile(exNode.Offset, block);
-                            return true;
+                            EmptyBlocksOffsetes.Add(exNode.Offset);
                         }
-                        else
-                        {
-                            // mozeme sa zlucit s blokom vedla
-                            var blockToMerge = TryReadBlockFromFile(exNodesbrother.Offset);
-                            return MergeBlocks(exNode, block, exNodesbrother, blockToMerge);
-                        }
-                    }
-                    else
-                    {
                         TryWriteBlockToFile(exNode.Offset, block);
                         return true;
                     }
+                    else
+                    {
+                        var exNodesbrother = exNode!.GetBrother();
+                        // TODO kontrolovat brata v cykle, nie iba raz!
+                        if (exNodesbrother != null && exNodesbrother.Offset != -1 && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor)
+                        {
+                             // mozeme sa zlucit s blokom vedla
+                             var blockToMerge = TryReadBlockFromFile(exNodesbrother.Offset);
+                             return MergeBlocks(exNode, block, exNodesbrother, blockToMerge);                            
+                        }
+                        else
+                        {
+                            if (exNode.RecordsCount == 0)
+                            {
+                                HandleEmptyBlocks(block, exNode);
+                            }
+                            else
+                                TryWriteBlockToFile(exNode.Offset, block);
+                            return true;
+                        }
+                    }                   
                 }
                 else
                 {
@@ -113,7 +130,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         private bool MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
         {
             // prepisovat bloky z toho kde ich je menej tam kde ich je viac
-            for (int i = 0; i < secondBlock.ValidCount; i++)
+            int secondBlockValidCount = secondBlock.ValidCount;
+            for (int i = 0; i < secondBlockValidCount; i++)
             {
                 firstBlock.InsertRecord(secondBlock.Records[0]);
                 secondBlock.RemoveRecord(secondBlock.Records[0]);
@@ -123,18 +141,20 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             firstNode.Parent.Parent!.ReplaceSon(firstNode.Parent, newExternNode);
             // ak je blok na konci suboru, zmensim subor.. nemalo by sa stat ze by som odstranil inicializcne dva bloky,
             // pretoze vtedy by som sa nemal dostat ani na vykonanie tejto metody
-            HandleEmptyBlocks(secondBlock, secondNode.Offset);
+            HandleEmptyBlocks(secondBlock, secondNode);
+
             TryWriteBlockToFile(newExternNode.Offset, firstBlock);
             return true;
 
 
         }
 
-        private void HandleEmptyBlocks(Block<T> emptyBlock, long blockOffset)
+        // TODO - ked vkladam adresu do listu prazdnych blokov, v externNode nastavim adresu na -1 (pripadne vymazem node)
+        private void HandleEmptyBlocks(Block<T> emptyBlock, ExternNode exNode)
         {
             var blockSize = emptyBlock.GetSize();
             var fileLength = File.Length;
-            if (fileLength - blockSize == blockOffset)
+            if (fileLength - blockSize == exNode.Offset)
             {
                 // zmensim velkost suboru
                 fileLength -= blockSize;
@@ -144,7 +164,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 {
                     fileLength -= blockSize;
                     EmptyBlocksOffsetes.Remove(fileLength - blockSize);
-
                 }
                 // prazdne bloky by nemali byt v strome trie, takze ich nemusime odtial odstranovat
                 File.SetLength(fileLength);
@@ -153,52 +172,73 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             else
             {
                 // zapisem prazdnu adresu do zoznamu prazdnych blokov
-                EmptyBlocksOffsetes.Add(blockOffset);
+                EmptyBlocksOffsetes.Add(exNode.Offset);
                 // prazdny blok zapiseme naspat do suboru, uz s valid count 0
-                TryWriteBlockToFile(blockOffset, emptyBlock);
+                TryWriteBlockToFile(exNode.Offset, emptyBlock);
+                // DELETE?
+                exNode.Offset = -1;
             }
-
-
         }
-        private bool TryRehashAndInsertData(BitArray newHash, T data, ExternNode exNode, int currentBit)
+
+        private void AsignOffsetToNode(ExternNode node)
         {
-            var FullBlock = TryReadBlockFromFile(exNode.Offset);
-            InternNode inNode;
-            ExternNode leftNode;
-            ExternNode rightNode;
-            BitArray hash;
-            bool newDataRight = false;
-            // umelo navysime recordsCount .. ako keby sa tam pridal uz prvok ktroy sa tam nezmesti, aby nam aspon raz prebehol cyklus
-            exNode.RecordsCount++;
-            if (exNode.IsLeftSon())
+            long adressForNewBlock = 0;
+            if (EmptyBlocksOffsetes.Count > 0)
             {
-                leftNode = exNode;
-                rightNode = new ExternNode(0, 0);
+                // ak mame volnu adresu, berieme adresu zo zoznamu volnych adries
+                adressForNewBlock = EmptyBlocksOffsetes[EmptyBlocksOffsetes.Count - 1];
+                EmptyBlocksOffsetes.RemoveAt(EmptyBlocksOffsetes.Count - 1);
             }
             else
             {
-                rightNode = exNode;
-                leftNode = new ExternNode(0, 0);
+                // ak nemame volnu adresu, zvacsujeme subor
+                adressForNewBlock = File.Length;
+                File.SetLength(File.Length + trie.BlockSize);
             }
-            while (leftNode.RecordsCount > BlockFactor || rightNode.RecordsCount > BlockFactor)
+            node.Offset = adressForNewBlock;
+        }
+        private bool TryRehashAndInsertData(BitArray newHash, T data, ExternNode exNodeToSplit, int currentBit)
+        {
+            var FullBlock = TryReadBlockFromFile(exNodeToSplit.Offset);
+            long freeOffset = exNodeToSplit.Offset;
+            InternNode inNode;
+            ExternNode leftNode = null;
+            ExternNode rightNode = null;
+            BitArray hash;
+            bool newDataRight = false;
+            // umelo navysime recordsCount .. ako keby sa tam pridal uz prvok ktroy sa tam nezmesti, aby nam aspon raz prebehol cyklus
+            exNodeToSplit.RecordsCount++;
+            Direction newInternNodeDirection;
+            
+            //exNodeToSplit.Parent = null;
+            //while (leftNode.RecordsCount > BlockFactor || rightNode.RecordsCount > BlockFactor)
+            while (exNodeToSplit.RecordsCount > BlockFactor)
             {
                 currentBit++;
-                if (leftNode.RecordsCount > BlockFactor)
+                if (exNodeToSplit.IsLeftSon())
                 {
-                    inNode = new InternNode(leftNode.Parent);
-                    ((InternNode)leftNode.Parent!).LeftSon = inNode;
-
+                    newInternNodeDirection = Direction.Left;
                 }
                 else
                 {
-                    inNode = new InternNode(rightNode.Parent);
-                    ((InternNode)rightNode.Parent!).RightSon = inNode;
+                    newInternNodeDirection = Direction.Right;
+                }
+                rightNode = new ExternNode(-1,0);
+                leftNode = new ExternNode(-1, 0);
+                if (newInternNodeDirection == Direction.Left)
+                {
+                    inNode = new InternNode(exNodeToSplit.Parent);
+                    ((InternNode)exNodeToSplit.Parent!).LeftSon = inNode;                    
+                }
+                else
+                {
+                    inNode = new InternNode(exNodeToSplit.Parent);
+                    ((InternNode)exNodeToSplit.Parent!).RightSon = inNode;
                 }
                 inNode.LeftSon = leftNode;
                 inNode.RightSon = rightNode;
                 leftNode.Parent = inNode;
                 rightNode.Parent = inNode;
-
 
                 leftNode.RecordsCount = 0;
                 rightNode.RecordsCount = 0;
@@ -236,6 +276,12 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 {
                     throw new IndexOutOfRangeException("Nepoadarilo sa prehesovat blok, prvok sa nepodarilo vlozit do Dynamickeho hasovacieho suboru!");
                 }
+                if (rightNode.RecordsCount > BlockFactor)
+                    exNodeToSplit = rightNode;
+                else if (leftNode.RecordsCount > BlockFactor)
+                    exNodeToSplit = leftNode;
+                else
+                    exNodeToSplit.RecordsCount = 0;
             }
 
             var NewRightBlock = new Block<T>(BlockFactor);
@@ -255,27 +301,14 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     throw new IndexOutOfRangeException("Nepoadarilo sa prehesovat blok, prvok sa nepodarilo vlozit do Dynamickeho hasovacieho suboru!");
                 }
             }
-            long adressForNewBlock;
-            if (EmptyBlocksOffsetes.Count > 0)
-            {
-                // ak mame volnu adresu, berieme adresu zo zoznamu volnych adries
-                adressForNewBlock = EmptyBlocksOffsetes[EmptyBlocksOffsetes.Count - 1];
-                EmptyBlocksOffsetes.RemoveAt(EmptyBlocksOffsetes.Count - 1);
-            }
-            else
-            {
-                // ak nemame volnu adresu, zvacsujeme subor
-                adressForNewBlock = File.Length;
-                File.SetLength(File.Length + FullBlock.GetSize());
-            }
             if (newDataRight)
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
-                leftNode.Offset = exNode.Offset;
+                leftNode.Offset = freeOffset;
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                rightNode.Offset = adressForNewBlock;
+                AsignOffsetToNode(rightNode);
                 NewRightBlock.InsertRecord(data);
                 TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
                 return true;
@@ -284,10 +317,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
-                rightNode.Offset = exNode.Offset;
+                rightNode.Offset = freeOffset;
                 TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                leftNode.Offset = adressForNewBlock;
+                AsignOffsetToNode(leftNode);
                 NewLeftBlock.InsertRecord(data);
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 return true;

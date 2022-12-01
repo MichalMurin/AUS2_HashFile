@@ -162,6 +162,11 @@ namespace AUS2_MichalMurin_HashFile.Models
             return result;
         }
 
+        public string getFileRepresentation()
+        {
+            return $"{Name};{Surename};{BirthNum}";
+        }
+
 
     }
 }
