@@ -62,24 +62,30 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                 return (false, null, -1);
             }
         }
-        /// <summary>
-        /// Metoda na na najdenie vrcholu stromu s hladanymi datami
-        /// </summary>
-        /// <param name="pData">Hladane data</param>
-        /// <returns>hladane data zo stromu</returns>
-        /// <exception cref="Exception">Vynimka ak sa data nenachadzaju v strome</exception>
-        //public ExternNode? Find(BitArray pData)
-        //{
-        //    var result = FindExternNode(pData);
-        //    if (result.Item1)
-        //    {
-        //        return result.Item2;
-        //    }
-        //    else
-        //    {
-        //        throw new Exception("No such data in Trie!");
-        //    }
-        //}
+
+        private IEnumerable<TrieNode> LevelOrder()
+        {
+            // Zacinam s rootom
+            if (Root == null)
+                yield break;
+            Queue<TrieNode> helperQueue = new Queue<TrieNode>();
+            helperQueue.Enqueue(Root);
+            while (helperQueue.Count != 0)
+            {
+                TrieNode currentNode = helperQueue.Dequeue();
+                yield return currentNode;
+                // vlozime laveho syna
+                if (currentNode.GetType() == typeof(InternNode) && ((InternNode)currentNode).HasLeftSon())
+                {
+                    helperQueue.Enqueue(((InternNode)currentNode!).LeftSon);
+                }
+                // vlozime praveho syna
+                if (currentNode.GetType() == typeof(InternNode) && ((InternNode)currentNode).HasRightSon())
+                {
+                    helperQueue.Enqueue(((InternNode)currentNode).RightSon);
+                }
+            }
+        }
     }
 }
 

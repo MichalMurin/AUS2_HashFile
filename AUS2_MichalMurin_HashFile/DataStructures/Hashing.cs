@@ -91,6 +91,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return block;
         }
 
+        public abstract void ExportAppDataToFile(string path);
+
+        public abstract void LoadAppDataFromFile(string path);
+
         public void ConsoleWriteSequence()
         {
             File.Seek(0, SeekOrigin.Begin);
@@ -99,7 +103,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             long blockCount = File.Length/block.GetSize();
             for (long i = 0; i < blockCount; i++)
             {
-                //Block<T> block = new Block<T>(BlockFactor);
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {

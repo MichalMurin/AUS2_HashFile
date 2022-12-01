@@ -42,5 +42,21 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                 return false;
             }
         }
+        /// <summary>
+        /// Metoda na zistenie, ci ma vrchol laveho syna
+        /// </summary>
+        /// <returns>True - ak ma laveho syna, inak False</returns>
+        public bool HasLeftSon()
+        {
+            return LeftSon != null;
+        }
+        /// <summary>
+        /// Metoda na zistenie, ci ma vrchol praveho syna
+        /// </summary>
+        /// <returns>True - ak ma praveho syna, inak False</returns>
+        public bool HasRightSon()
+        {
+            return RightSon != null;
+        }
     }
 }

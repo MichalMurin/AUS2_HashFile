@@ -15,16 +15,20 @@ namespace AUS2_MichalMurin_HashFile.Service
     {
         private Hashing<Patient> hash;
         private DataGenerator generator = new DataGenerator();
-        private Random rand = new Random(1);
+        private Random rand = new Random();
         private HashSet<string> setOfBirthNums = new HashSet<string>();
-        public Test(int blockFactor, int blockCount)
+        public Test(int blockFactor, HashType type, int blockCount)
         {
             if (File.Exists(@"TESTING"))
             {
                 File.Delete(@"TESTING");
             }
-            //hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
-            hash = new DynamicHashing<Patient>("TESTING", blockFactor);
+            if (type == HashType.StaticHash)
+                hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
+            else if (type == HashType.DynamicHash)
+                hash = new DynamicHashing<Patient>("TESTING", blockFactor);
+            else
+                throw new ArgumentException("Invalid hash type");
         }
 
         private Patient getRndPatient()
@@ -53,11 +57,53 @@ namespace AUS2_MichalMurin_HashFile.Service
             return listofPatients;
         }
 
-        public bool runTest(int initialSize, int numberOfOperations, int step = 0)
+        private bool checkAllDataInFile(List<Patient> checkList, string errorMsg)
         {
+            bool ret = true;
+            var listofPatientsInFile = GetListOfBirthunmsInFile();
+            foreach (var pat in checkList)
+            {
+                if (!listofPatientsInFile.Contains(pat.BirthNum))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(errorMsg);
+                    Console.ResetColor();
+                    ret = false;
+                }
+            }
+            return ret;
+            
+        }
 
-            Console.WriteLine("START TESTU - testujeme Static hash file o inicializacnej velkosti " + initialSize +
-                " pocet operacii: " + numberOfOperations);
+        private List<string> GetListOfBirthunmsInFile()
+        {
+            List<string> retList = new List<string>();
+            hash.File.Seek(0, SeekOrigin.Begin);
+            Block<Patient> block = new Block<Patient>(hash.BlockFactor);
+            long blockCount = hash.File.Length / block.GetSize();
+            for (long i = 0; i < blockCount; i++)
+            {
+                byte[] blockBytes = new byte[block.GetSize()];
+                try
+                {
+                    hash.File.Read(blockBytes);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                block.FromByteArray(blockBytes);
+                for (int j = 0; j < block.ValidCount; j++)
+                {
+                    retList.Add(block.Records[j].BirthNum);
+                }
+            }
+            return retList;
+        }
+        public bool runTest(int initialSize, int numberOfOperations, int step = 0, bool checkAllDataAfterEachOperation = false)
+        {
+            var type = hash.GetType() == typeof(StaticHashing<Patient>) ? "STATICKY" : "DYNAMICKY";
+            Console.WriteLine($"START TESTU - testujeme {type} hash file o inicializacnej velkosti {initialSize}, pocet operacii: {numberOfOperations}");
             Stopwatch stopwatchInsert = new Stopwatch();
             Stopwatch stopwatchFind = new Stopwatch();
             Stopwatch stopwatchDelete = new Stopwatch();
@@ -75,7 +121,6 @@ namespace AUS2_MichalMurin_HashFile.Service
             //        Console.ResetColor();
             //    }
             //}
-
             var listofPatients = new List<Patient>(initialSize);
             Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
             while (listofPatients.Count != initialSize)
@@ -83,13 +128,26 @@ namespace AUS2_MichalMurin_HashFile.Service
                 var patient = getRndPatient();
                 listofPatients.Add(patient);
                 bool success = hash.Insert(patient);
-                Patient? patient2 = hash.Find(patient);
-                if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
+                if (hash.GetType() == typeof(StaticHashing<Patient>) && !success)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("STATICKY SUBOR -> Nepodarilo sa pridat prvok, pretoze je uz plny blok");
                     Console.ResetColor();
                 }
+                else
+                {
+                    Patient? patient2 = hash.Find(patient);
+                    if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
+                        Console.ResetColor();
+                    }
+                }                
+            }
+            if (checkAllDataAfterEachOperation)
+            {
+                checkAllDataInFile(listofPatients, "Pri inicializacnom naplnani dat nastala chyba! - INSERT()");
             }
 
             int numberOfInsert = 0;
@@ -135,7 +193,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                     result = hash.Insert(data);
                     stopwatchInsert.Stop();
                     numberOfInsert++;
-                    if (result)
+                    if (result || hash.GetType() == typeof(DynamicHashing<Patient>))
                     {
                         listofPatients.Add(data);
                         var patientToCompare = hash.Find(data);
@@ -153,6 +211,10 @@ namespace AUS2_MichalMurin_HashFile.Service
                         Console.WriteLine("Nepodarilo sa pridat prvok, pretoze je uz plny blok");
                         Console.ResetColor();
                     }
+                    if (checkAllDataAfterEachOperation)
+                    {
+                        checkAllDataInFile(listofPatients, "|ERROR| - Kontrola vsetkych dat - Pri operaci INSERT() nastala chyba!");
+                    }
                 }
                 else if (operationNumber == 1)
                 {
@@ -168,6 +230,10 @@ namespace AUS2_MichalMurin_HashFile.Service
                         Console.WriteLine("Nepodarilo sa najst prvok - TEST ZLYHAL - Find()");
                         Console.ResetColor();
                         return false;
+                    }
+                    if (checkAllDataAfterEachOperation)
+                    {
+                        checkAllDataInFile(listofPatients, "|ERROR| - Kontrola vsetkych dat - Pri operaci FIND() nastala chyba!");
                     }
                 }
                 else if (operationNumber == 2)
@@ -192,6 +258,10 @@ namespace AUS2_MichalMurin_HashFile.Service
                         Console.WriteLine("Nepodarilo sa vymazat prvok - TEST ZLYHAL - Delete()");
                         Console.ResetColor();
                         return false;
+                    }
+                    if (checkAllDataAfterEachOperation)
+                    {
+                        checkAllDataInFile(listofPatients, "|ERROR| - Kontrola vsetkych dat - Pri operaci DELETE() nastala chyba!");
                     }
                 }
             }

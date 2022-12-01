@@ -152,7 +152,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         }
 
-        // TODO - ked vkladam adresu do listu prazdnych blokov, v externNode nastavim adresu na -1 (pripadne vymazem node)
         private void HandleEmptyBlocks(Block<T> emptyBlock, ExternNode exNode)
         {
             var blockSize = emptyBlock.GetSize();
@@ -178,7 +177,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 EmptyBlocksOffsetes.Add(exNode.Offset);
                 // prazdny blok zapiseme naspat do suboru, uz s valid count 0
                 TryWriteBlockToFile(exNode.Offset, emptyBlock);
-                // DELETE?
                 exNode.Offset = -1;
             }
         }
@@ -328,6 +326,16 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 return true;
             }
+        }
+
+        public override void ExportAppDataToFile(string path)
+        {
+           
+        }
+
+        public override void LoadAppDataFromFile(string path)
+        {
+            throw new NotImplementedException();
         }
     }
 }
