@@ -40,7 +40,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             TrieNode? resultNode = Root;
             if (resultNode == null)
             {
-                return (false, null, 0);
+                return (false, null, -1);
             }
             else
             {
@@ -59,7 +59,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                         resultNode = ((InternNode)resultNode).LeftSon;
                     }
                 }
-                return (false, null, 0);
+                return (false, null, -1);
             }
         }
         /// <summary>

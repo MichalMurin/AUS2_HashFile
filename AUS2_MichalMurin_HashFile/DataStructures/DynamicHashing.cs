@@ -96,24 +96,27 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     }
                     else
                     {
-                        var exNodesbrother = exNode!.GetBrother();
-                        // TODO kontrolovat brata v cykle, nie iba raz!
-                        if (exNodesbrother != null && exNodesbrother.Offset != -1 && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor)
+                        ExternNode? exNodesbrother;
+                        while (true)
                         {
-                             // mozeme sa zlucit s blokom vedla
-                             var blockToMerge = TryReadBlockFromFile(exNodesbrother.Offset);
-                             return MergeBlocks(exNode, block, exNodesbrother, blockToMerge);                            
-                        }
-                        else
-                        {
-                            if (exNode.RecordsCount == 0)
+                            exNodesbrother = exNode!.GetBrother();
+                            if (exNodesbrother != null && exNodesbrother.Offset != -1 && exNodesbrother.RecordsCount + exNode.RecordsCount <= BlockFactor && exNode.Parent != trie.Root)
                             {
-                                HandleEmptyBlocks(block, exNode);
+                                // mozeme sa zlucit s blokom vedla
+                                var blockToMerge = TryReadBlockFromFile(exNodesbrother.Offset);
+                                (exNode,block) = MergeBlocks(exNode, block, exNodesbrother, blockToMerge);
                             }
                             else
-                                TryWriteBlockToFile(exNode.Offset, block);
-                            return true;
-                        }
+                            {
+                                if (exNode.RecordsCount == 0)
+                                {
+                                    HandleEmptyBlocks(block, exNode);
+                                }
+                                else
+                                    TryWriteBlockToFile(exNode.Offset, block);
+                                return true;
+                            }
+                        }                    
                     }                   
                 }
                 else
@@ -127,7 +130,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
-        private bool MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
+        private (ExternNode, Block<T>) MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
         {
             // prepisovat bloky z toho kde ich je menej tam kde ich je viac
             int secondBlockValidCount = secondBlock.ValidCount;
@@ -142,9 +145,9 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             // ak je blok na konci suboru, zmensim subor.. nemalo by sa stat ze by som odstranil inicializcne dva bloky,
             // pretoze vtedy by som sa nemal dostat ani na vykonanie tejto metody
             HandleEmptyBlocks(secondBlock, secondNode);
-
-            TryWriteBlockToFile(newExternNode.Offset, firstBlock);
-            return true;
+            return (newExternNode, firstBlock);
+            //TryWriteBlockToFile(newExternNode.Offset, firstBlock);
+            //return true;
 
 
         }

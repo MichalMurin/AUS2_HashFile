@@ -42,8 +42,8 @@ class Program
 
 
 
-        Test test = new Test(3, 1000);
-         test.runTest(1000, 10000, 1);
+        Test test = new Test(5, 1000);
+         test.runTest(10000, 20000, 1);
         return 0;
     }
 

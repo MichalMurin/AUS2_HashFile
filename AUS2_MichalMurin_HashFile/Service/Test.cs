@@ -61,27 +61,11 @@ namespace AUS2_MichalMurin_HashFile.Service
             Stopwatch stopwatchInsert = new Stopwatch();
             Stopwatch stopwatchFind = new Stopwatch();
             Stopwatch stopwatchDelete = new Stopwatch();
-            var listofPatients = FillListFromTestFile(initialSize);
 
-            for (int i = 0; i < initialSize; i++)
-            {
-                var patient = listofPatients[i];
-                bool success = hash.Insert(patient);
-                Patient? patient2 = hash.Find(patient);
-                if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
-                    Console.ResetColor();
-                }
-            }
-
-            //var listofPatients = new List<Patient>(initialSize);
-            //Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
-            //while (listofPatients.Count != initialSize)
+            //var listofPatients = FillListFromTestFile(initialSize);
+            //for (int i = 0; i < initialSize; i++)
             //{
-            //    var patient = getRndPatient();
-            //    listofPatients.Add(patient);
+            //    var patient = listofPatients[i];
             //    bool success = hash.Insert(patient);
             //    Patient? patient2 = hash.Find(patient);
             //    if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
@@ -92,6 +76,22 @@ namespace AUS2_MichalMurin_HashFile.Service
             //    }
             //}
 
+            var listofPatients = new List<Patient>(initialSize);
+            Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
+            while (listofPatients.Count != initialSize)
+            {
+                var patient = getRndPatient();
+                listofPatients.Add(patient);
+                bool success = hash.Insert(patient);
+                Patient? patient2 = hash.Find(patient);
+                if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
+                    Console.ResetColor();
+                }
+            }
+
             int numberOfInsert = 0;
             int numberOfFind = 0;
             int numberOfDelete = 0;
@@ -100,7 +100,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             bool result;
             int rndIndex = 0;
 
-            //Console.WriteLine("Subor je naplneny na inicializacnu velkost, zacinam testovat operacie");
+            Console.WriteLine("Subor je naplneny na inicializacnu velkost, zacinam testovat operacie");
             //for (int i = 0; i < 100000; i++)
             //{
             //    rndIndex = rand.Next(0, listofPatients.Count);
