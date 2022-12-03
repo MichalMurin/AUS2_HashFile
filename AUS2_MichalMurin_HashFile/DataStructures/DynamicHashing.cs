@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,9 +18,12 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
     {
         public Trie.Trie trie { get; set; }
         public List<long> EmptyBlocksOffsetes { get; set; }
+
+        public static string _pathForTrieData { get; } = "Trie.csv";
+        public static string _pathForEmptyBlocksData { get; } = "EmptyBlocks.csv";
         public DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {            
-            trie = new Trie.Trie(pBlockFactor, new Block<T>(pBlockFactor).GetSize());
+            trie = new Trie.Trie();
             EmptyBlocksOffsetes = new List<long>();
         }
 
@@ -89,10 +93,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                         // mozu byt v subore zapisane dva prazdne bloky ktore su inicializacne??
                         if (exNode.RecordsCount == 0)
                         {
-                            EmptyBlocksOffsetes.Add(exNode.Offset);
+                            HandleEmptyBlocks(block, exNode);
+                            return true;
+                            //EmptyBlocksOffsetes.Add(exNode.Offset);
                         }
-                        TryWriteBlockToFile(exNode.Offset, block);
-                        return true;
+                        else
+                        {
+                            TryWriteBlockToFile(exNode.Offset, block);
+                            return true;
+                        }
                     }
                     else
                     {
@@ -132,20 +141,39 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         private (ExternNode, Block<T>) MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
         {
-            // prepisovat bloky z toho kde ich je menej tam kde ich je viac
-            int secondBlockValidCount = secondBlock.ValidCount;
-            for (int i = 0; i < secondBlockValidCount; i++)
+            // prepisovat bloky z toho kde ich je menej tam kde ich je viac , alebo presuvat na nizsiu adresu, aby sa prazdne bloky zdrziavali na konci suboru
+            ExternNode toBeEmptyNode, toBeFullNode;
+            Block<T> toBeEmptyBlock, toBeFullBlock;
+
+            if(firstNode.Offset > secondNode.Offset)
             {
-                firstBlock.InsertRecord(secondBlock.Records[0]);
-                secondBlock.RemoveRecord(secondBlock.Records[0]);
+                toBeEmptyBlock = firstBlock;
+                toBeEmptyNode = firstNode;
+                toBeFullBlock = secondBlock;
+                toBeFullNode = secondNode;
+            }
+            else
+            {
+                toBeEmptyBlock = secondBlock;
+                toBeEmptyNode = secondNode;
+                toBeFullBlock = firstBlock;
+                toBeFullNode = firstNode;
             }
 
-            ExternNode newExternNode = new ExternNode(firstNode.Offset, firstBlock.ValidCount, firstNode.Parent!.Parent);
-            firstNode.Parent.Parent!.ReplaceSon(firstNode.Parent, newExternNode);
+            int tmpValidCount = toBeEmptyBlock.ValidCount;
+            for (int i = 0; i < tmpValidCount; i++)
+            {
+                toBeFullBlock.InsertRecord(toBeEmptyBlock.Records[0]);
+                toBeEmptyBlock.RemoveRecord(toBeEmptyBlock.Records[0]);
+            }
+
+            ExternNode newExternNode = new ExternNode(toBeFullNode.Offset, toBeFullBlock.ValidCount, toBeFullNode.Parent!.Parent);
+            toBeFullNode.Parent.Parent!.ReplaceSon(toBeFullNode.Parent, newExternNode);
             // ak je blok na konci suboru, zmensim subor.. nemalo by sa stat ze by som odstranil inicializcne dva bloky,
             // pretoze vtedy by som sa nemal dostat ani na vykonanie tejto metody
-            HandleEmptyBlocks(secondBlock, secondNode);
-            return (newExternNode, firstBlock);
+            toBeEmptyNode.RecordsCount = toBeEmptyBlock.ValidCount;
+            HandleEmptyBlocks(toBeEmptyBlock, toBeEmptyNode);
+            return (newExternNode, toBeFullBlock);
             //TryWriteBlockToFile(newExternNode.Offset, firstBlock);
             //return true;
 
@@ -177,8 +205,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 EmptyBlocksOffsetes.Add(exNode.Offset);
                 // prazdny blok zapiseme naspat do suboru, uz s valid count 0
                 TryWriteBlockToFile(exNode.Offset, emptyBlock);
-                exNode.Offset = -1;
             }
+            exNode.Offset = -1;
         }
 
         private void AsignOffsetToNode(ExternNode node)
@@ -194,7 +222,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             {
                 // ak nemame volnu adresu, zvacsujeme subor
                 adressForNewBlock = HashFile.Length;
-                HashFile.SetLength(HashFile.Length + trie.BlockSize);
+                HashFile.SetLength(HashFile.Length + BlockSize);
             }
             node.Offset = adressForNewBlock;
         }
@@ -328,23 +356,22 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
-        public void ExportAppDataToFile(string pathForTrie, string pathForEmptyBlocks)
+        public override void ExportAppDataToFile()
         {
-            trie.SaveToFile(pathForTrie);
+            trie.SaveToFile(_pathForTrieData);
             var offsetsString = new List<string>();
             foreach (var item in EmptyBlocksOffsetes)
             {
                 offsetsString.Add(item.ToString());
             }
-            File.WriteAllLines(pathForEmptyBlocks, offsetsString);
-
+            File.WriteAllLines(_pathForEmptyBlocksData, offsetsString);
         }
 
-        public static (Trie.Trie, List<long>) LoadAppDataFromFile(string pathForTrie, string pathForEmptyBlocks)
+        public static (Trie.Trie, List<long>) LoadAppDataFromFile()
         {
-            var itemsForTrie = Trie.Trie.GetLeafesFromFile(pathForTrie);
-            var trie = new Trie.Trie(itemsForTrie.Item3, itemsForTrie.Item1, itemsForTrie.Item2);
-            var linesOfEmptyBlocks = File.ReadLines(pathForEmptyBlocks);
+            var itemsForTrie = Trie.Trie.GetLeafesFromFile(_pathForTrieData);
+            var trie = new Trie.Trie(itemsForTrie);
+            var linesOfEmptyBlocks = File.ReadLines(_pathForEmptyBlocksData);
             List<long> emptyOffsets = new List<long>();
             long tmp;
             foreach (var line in linesOfEmptyBlocks)

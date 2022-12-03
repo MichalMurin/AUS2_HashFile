@@ -180,8 +180,6 @@
             this.Text = "Pridaj Pacienta";
             this.PatientDataGroupBox.ResumeLayout(false);
             this.PatientDataGroupBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.presenterBindingSource)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.kodPoistovne)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

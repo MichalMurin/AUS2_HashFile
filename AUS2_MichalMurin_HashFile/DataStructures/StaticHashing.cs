@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
     internal class StaticHashing<T> : Hashing<T> where T : IData<T>
     {
         public int TotalBlockCount { get; set; }
+        public static string _pathForStaticFileData { get; } = "staticHashData.csv";
         public StaticHashing(string pFileName, int pBlockFactor, int pBlockCount) : base(pFileName, pBlockFactor)
         {
             TotalBlockCount = pBlockCount;
@@ -53,14 +55,19 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return success;
         }
 
-        //public override void ExportAppDataToFile(string path)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        //
+        public static (int, string) LoadBaseDataFromFile(string path)
+        {
+            string line = File.ReadAllText(path);
+            var results = line.Split(";");
+            int BlFactor;
+            int.TryParse(results[0], out BlFactor);
+            return (BlFactor, results[1]);
+        }
 
-        //public override void LoadAppDataFromFile(string path)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public override void ExportAppDataToFile()
+        {
+            File.WriteAllText(_pathForStaticFileData, $"{BlockFactor};{HashFile.Name}");
+        }
     }
 }

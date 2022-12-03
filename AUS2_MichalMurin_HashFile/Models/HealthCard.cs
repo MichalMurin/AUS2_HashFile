@@ -13,13 +13,12 @@ namespace AUS2_MichalMurin_HashFile.Models
     {
         public Hashing<Patient> Patients { get; set; }
         private string _dataFilePath = "HASH";
-        private string _appDataPath = "hashFileData.csv";
 
         public HealthCard(HashType type, int blockFactor, int blockCount=-1)
         {
             if (type == HashType.StaticHash)
             {
-                if (File.Exists(_appDataPath))
+                if (File.Exists(StaticHashing<Patient>._pathForStaticFileData))
                 {
                     // load data a vytvroenie HashFile
                 }
@@ -30,7 +29,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             }
             else
             {
-                if (File.Exists(_appDataPath))
+                if (File.Exists(DynamicHashing<Patient>._pathForTrieData) && File.Exists(DynamicHashing<Patient>._pathForEmptyBlocksData))
                 {
                     // load data a vytvroenie HashFile
                 }
@@ -197,6 +196,11 @@ namespace AUS2_MichalMurin_HashFile.Models
         public List<string> SequencePrint()
         {
             return Patients.GetSequenceOfBlocks();
+        }
+
+        public bool FindConfigFiles()
+        {
+            throw new NotImplementedException();
         }
     }
 }

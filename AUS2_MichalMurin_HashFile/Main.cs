@@ -13,6 +13,17 @@ class Program
 {
     public static int Main()
     {
+        DataGenerator gen = new DataGenerator();
+
+        var pat = gen.getRndPatient();
+        var size = pat.GetSize();
+        var array = pat.ToByteArray();
+
+        var secondpat = new Patient();
+
+        secondpat.FromByteArray(array);
+
+
 
         if (File.Exists(@"Test"))
         {
@@ -48,8 +59,8 @@ class Program
 
 
 
-        Test test = new Test(5, HashType.DynamicHash,1000);
-         test.runTest(10000, 100000, 1, true);
+        Test test = new Test(5, HashType.DynamicHash,100);
+         test.runTest(1000, 1000, 1, true);
         return 0;
     }
 

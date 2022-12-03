@@ -12,9 +12,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
     {
         public FileStream HashFile { get; set; }
         public int BlockFactor { get; set; }
-
+        public int BlockSize { get; private set; }
+        public static string _pathToBaseData { get; } = "baseData.csv";
         public Hashing(string pFileName, int pBlockFactor)
         {
+            BlockSize = new Block<T>(pBlockFactor).GetSize();
             BlockFactor = pBlockFactor;
             try
             {
@@ -113,18 +115,17 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return block;
         }
 
-       // public abstract void ExportAppDataToFile(string path);
+       public abstract void ExportAppDataToFile();
 
-       // public abstract void LoadAppDataFromFile(string path);
        public void SaveBaseDataToFile(string path)
         {
             File.WriteAllText(path, $"{BlockFactor};{HashFile.Name}");
         }
 
         // vraciam blok faktor a cestu k suboru
-        public static (int, string) LoadBaseDataFromFile(string path)
+        public static (int, string) LoadBaseDataFromFile()
         {
-            string line = File.ReadAllText(path);
+            string line = File.ReadAllText(_pathToBaseData);
             var results = line.Split(";");
             int BlFactor;
             int.TryParse(results[0], out BlFactor);
@@ -166,6 +167,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             long blockCount = HashFile.Length / block.GetSize();
             for (long i = 0; i < blockCount; i++)
             {
+                result.Add($"ADRESA: {HashFile.Position}");
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {
@@ -176,7 +178,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     throw;
                 }
                 block.FromByteArray(blockBytes);
-                result.Add($"ADRESA: {HashFile.Position}");
                 result.Add($"Blok cislo {i}: Valid count = {block.ValidCount}");
                 foreach (var rec in block.Records)
                 {

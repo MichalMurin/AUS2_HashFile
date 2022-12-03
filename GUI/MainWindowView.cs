@@ -13,7 +13,6 @@ namespace GUI
         {
             InitializeComponent();
             presenter = pPresenter;
-            //presenter = new Presenter();
         }
 
         private void GenerateBtn_Click(object sender, EventArgs e)

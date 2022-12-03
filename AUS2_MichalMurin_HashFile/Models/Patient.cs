@@ -25,7 +25,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         public string BirthNum { get; set; }
         public DateTime BirthDate { get; set; }
         public byte HelathInsuranceCode { get; set; }
-        public Hospitalization[] Hospitalizations { get; set; }
+        public Hospitalization?[] Hospitalizations { get; set; }
         private int _actualNumberOfHospitalizations = 0;
         private int _actualLengthOfname;
         private int _actualLengthOfsurename;
@@ -35,7 +35,11 @@ namespace AUS2_MichalMurin_HashFile.Models
         public Patient()
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-            Array.Fill(Hospitalizations, new Hospitalization());
+            //Array.Fill(Hospitalizations, new Hospitalization());
+            for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
+            {
+                Hospitalizations[i] = new Hospitalization();
+            }
             Name = "";
             Surename = "";
             BirthNum = "";
@@ -45,7 +49,11 @@ namespace AUS2_MichalMurin_HashFile.Models
         public Patient(string birthNum)
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-            Array.Fill(Hospitalizations, new Hospitalization());
+            //Array.Fill(Hospitalizations, new Hospitalization());
+            for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
+            {
+                Hospitalizations[i] = new Hospitalization();
+            }
             Name = "";
             Surename = "";
             BirthNum = birthNum;
@@ -61,7 +69,11 @@ namespace AUS2_MichalMurin_HashFile.Models
             else
             {
                 Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-                Array.Fill(Hospitalizations, new Hospitalization());
+                //Array.Fill(Hospitalizations, new Hospitalization());
+                for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
+                {
+                    Hospitalizations[i] = new Hospitalization();
+                }
                 Name = name;
                 Surename = surename;
                 BirthNum = birthnum;
@@ -69,7 +81,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                 _actualLengthOfname = Name.Length;
                 _actualLengthOfsurename = Surename.Length;
                 _actualLengthOfbirthnumber = BirthNum.Length;
-                
+                BirthDate = DateTime.Now;
             }
         }
 
@@ -142,14 +154,22 @@ namespace AUS2_MichalMurin_HashFile.Models
                     this.Name = reader.ReadString().Substring(0, _actualLengthOfname);
                     this.Surename = reader.ReadString().Substring(0, _actualLengthOfsurename);
                     this.BirthNum = reader.ReadString().Substring(0, _actualLengthOfbirthnumber);
-                    foreach (var hosp in this.Hospitalizations)
+                    for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
                     {
-                        hosp.Id = reader.ReadInt32();
-                        hosp.startDate = new DateTime(reader.ReadInt64());
-                        hosp.endDate = new DateTime(reader.ReadInt64());
-                        hosp.ActualDiagnosisLength = reader.ReadInt32();
-                        hosp.Diagnosis = reader.ReadString().Substring(0, hosp.ActualDiagnosisLength);
+                        Hospitalizations[i].Id = reader.ReadInt32();
+                        Hospitalizations[i].startDate = new DateTime(reader.ReadInt64());
+                        Hospitalizations[i].endDate = new DateTime(reader.ReadInt64());
+                        Hospitalizations[i].ActualDiagnosisLength = reader.ReadInt32();
+                        Hospitalizations[i].Diagnosis = reader.ReadString().Substring(0, Hospitalizations[i].ActualDiagnosisLength);
                     }
+                    //foreach (var hosp in this.Hospitalizations)
+                    //{
+                    //    hosp.Id = reader.ReadInt32();
+                    //    hosp.startDate = new DateTime(reader.ReadInt64());
+                    //    hosp.endDate = new DateTime(reader.ReadInt64());
+                    //    hosp.ActualDiagnosisLength = reader.ReadInt32();
+                    //    hosp.Diagnosis = reader.ReadString().Substring(0, hosp.ActualDiagnosisLength);
+                    //}
                 }
             }
         }
@@ -163,10 +183,10 @@ namespace AUS2_MichalMurin_HashFile.Models
 
         public override string ToString()
         {
-            string result = $"Pacient {Name} {Surename}, rodne cislo: {BirthNum}, narodeny: {BirthDate.ToString("dd.MM.yyyy")}, poistovna: {HelathInsuranceCode} , Hospitalizacie:\n";
+            string result = $"Pacient {Name} {Surename}, rodne cislo: {BirthNum},narodeny: {BirthDate} poistovna: {HelathInsuranceCode} , Hospitalizacie:\n";
             foreach (var hosp in Hospitalizations)
             {
-                if(hosp.Id != -1)
+                if(hosp.Id != 0)
                     result += hosp.ToString() + "\n\t";
             }
             return result;
@@ -191,9 +211,9 @@ namespace AUS2_MichalMurin_HashFile.Models
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id == -1)
+                if (Hospitalizations[i].Id == 0)
                 {
-                    hosp.Id = i;
+                    hosp.Id = i+1;
                     Hospitalizations[i] = hosp;
                     return true;
                 }
@@ -205,7 +225,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id != -1 && Hospitalizations[i].endDate == DateTime.MaxValue)
+                if (Hospitalizations[i].Id != 0 && Hospitalizations[i].endDate == DateTime.MaxValue)
                 {
                     Hospitalizations[i].endDate = end;
                     return true;          
@@ -220,7 +240,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             {
                 if (Hospitalizations[i].Id == id)
                 {
-                    Hospitalizations[i].Id = -1;
+                    Hospitalizations[i].Id = 0;
                     return true;
                 }
             }

@@ -97,5 +97,9 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             return healthCard.SequencePrint();
         }
 
+        public bool ArePresentAppConfigFiles()
+        {
+            return healthCard.FindConfigFiles();
+        }
     }
 }

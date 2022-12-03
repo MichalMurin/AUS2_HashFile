@@ -12,26 +12,26 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
     public class Trie
     {
-        internal int BlockFactor { get;}
+        //internal int BlockFactor { get;}
         /// <summary>
         /// Koren stromu
         /// </summary>
 
-        public int BlockSize { get;}
+       // public int BlockSize { get;}
         internal InternNode? Root { get; private set; }
 
         /// <summary>
         /// Bezparametricky konstruktor
         /// </summary>
-        public Trie(int pBlockFactor, int pBlockSize)
+        public Trie()
         {
             Root = new InternNode();
-            Root.LeftSon = new ExternNode(0, 0, Root);
-            Root.RightSon = new ExternNode(pBlockSize*pBlockFactor, 0, Root);
-            BlockFactor = pBlockFactor;
-            BlockSize = pBlockSize;
+            Root.LeftSon = new ExternNode(-1, 0, Root);
+            Root.RightSon = new ExternNode(-1, 0, Root);
+           // BlockFactor = pBlockFactor;
+           // BlockSize = pBlockSize;
         }
-        public Trie(List<(ExternNode, BitArray)> listOfExternNodes, int pBlockFactor, int pBlockSize)
+        public Trie(List<(ExternNode, BitArray)> listOfExternNodes)
         {
             if (listOfExternNodes.Count < 2)
             {
@@ -39,8 +39,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             }
 
             Root = new InternNode();
-            BlockFactor = pBlockFactor;
-            BlockSize = pBlockSize;
+            //BlockFactor = pBlockFactor;
+            //BlockSize = pBlockSize;
             foreach (var item in listOfExternNodes)
             {
                 InternNode current = Root;
@@ -168,7 +168,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         public void SaveToFile(string path)
         {
             List<string> content = new List<string>();
-            content.Add($"{BlockSize};{BlockFactor}");
+           // content.Add($"{BlockSize};{BlockFactor}");
             var leafes = GetAllLeafs();
             foreach (var item in leafes)
             {
@@ -187,15 +187,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             File.WriteAllLines(path, content);
         }
 
-        public static (int, int,List<(ExternNode, BitArray)>) GetLeafesFromFile(string path)
+        public static List<(ExternNode, BitArray)> GetLeafesFromFile(string path)
         {
             List<(ExternNode, BitArray)> resultList = new List<(ExternNode, BitArray)>();
             var lines = File.ReadAllLines(path);
-            var results = lines[0].Split(";");
-            int blockFactor;
-            int blockSize;
-            int.TryParse(results[0], out blockSize);
-            int.TryParse(results[1], out blockFactor);
+            //var results = lines[0].Split(";");
+            //int blockFactor;
+            //int blockSize;
+            //int.TryParse(results[0], out blockSize);
+            //int.TryParse(results[1], out blockFactor);
             foreach (var line in lines)
             {
                 var parts = line.Split(";");
@@ -213,7 +213,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                 }
                 resultList.Add((new ExternNode(offset, recCount), bits));
             }
-            return (blockFactor, blockSize, resultList);
+            return resultList;
         }
     }
 }
