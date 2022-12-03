@@ -26,7 +26,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         public DateTime BirthDate { get; set; }
         public byte HelathInsuranceCode { get; set; }
         public Hospitalization?[] Hospitalizations { get; set; }
-        private int _actualNumberOfHospitalizations = 0;
+        //private int _actualNumberOfHospitalizations = 0;
         private int _actualLengthOfname;
         private int _actualLengthOfsurename;
         private int _actualLengthOfbirthnumber;
@@ -85,17 +85,6 @@ namespace AUS2_MichalMurin_HashFile.Models
             }
         }
 
-        public bool AddHospitalization(Hospitalization hosp)
-        {
-            if (_actualNumberOfHospitalizations < MAX_NUMBER_OF_HOSPITALIZATION)
-            {
-                Hospitalizations[_actualNumberOfHospitalizations] = hosp;
-                _actualNumberOfHospitalizations++;
-                return true;
-            }
-            return false;
-        }
-
         public BitArray GetHash()
         {
             return new BitArray(Encoding.Default.GetBytes(BirthNum));
@@ -121,7 +110,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                     writer.Write(_actualLengthOfname);
                     writer.Write(_actualLengthOfsurename);
                     writer.Write(_actualLengthOfbirthnumber);
-                    writer.Write(_actualNumberOfHospitalizations);
+                    //writer.Write(_actualNumberOfHospitalizations);
                     writer.Write(HelathInsuranceCode);
                     writer.Write(BirthDate.Ticks);
                     writer.Write(Name + string.Concat(Enumerable.Repeat("0", MAX_NAME_LENGHT - Name.Length)));
@@ -148,7 +137,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                     this._actualLengthOfname = reader.ReadInt32();
                     this._actualLengthOfsurename = reader.ReadInt32();
                     this._actualLengthOfbirthnumber = reader.ReadInt32();
-                    this._actualNumberOfHospitalizations = reader.ReadInt32();
+                   // this._actualNumberOfHospitalizations = reader.ReadInt32();
                     this.HelathInsuranceCode = reader.ReadByte();
                     this.BirthDate = new DateTime(reader.ReadInt64());
                     this.Name = reader.ReadString().Substring(0, _actualLengthOfname);
@@ -178,7 +167,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         public int GetSize()
         {
             return (MAX_BIRTHNUM_LENGHT + MAX_NAME_LENGHT + MAX_SURENAME_LENGTH) + 3
-                + sizeof(int) * 4 + sizeof(byte) + sizeof(long) + MAX_NUMBER_OF_HOSPITALIZATION * Hospitalization.Size; 
+                + sizeof(int) * 3 + sizeof(byte) + sizeof(long) + MAX_NUMBER_OF_HOSPITALIZATION * Hospitalization.Size; 
         }
 
         public override string ToString()
