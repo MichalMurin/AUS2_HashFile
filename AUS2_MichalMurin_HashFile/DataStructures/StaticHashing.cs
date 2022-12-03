@@ -53,5 +53,14 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return success;
         }
 
+        //public override void ExportAppDataToFile(string path)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public override void LoadAppDataFromFile(string path)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

@@ -42,7 +42,17 @@ namespace AUS2_MichalMurin_HashFile.Models
             BirthDate = DateTime.Now;
             HelathInsuranceCode = 0;
         }
-        public Patient(string name, string surename, string birthnum, DateTime birthDate, byte insuranceCompanyCode)
+        public Patient(string birthNum)
+        {
+            Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
+            Array.Fill(Hospitalizations, new Hospitalization());
+            Name = "";
+            Surename = "";
+            BirthNum = birthNum;
+            BirthDate = DateTime.Now;
+            HelathInsuranceCode = 0;
+        }
+        public Patient(string name, string surename, string birthnum, byte insuranceCompanyCode)
         {
             if (name.Length > MAX_NAME_LENGHT ||
                 surename.Length > MAX_SURENAME_LENGTH ||
@@ -55,7 +65,6 @@ namespace AUS2_MichalMurin_HashFile.Models
                 Name = name;
                 Surename = surename;
                 BirthNum = birthnum;
-                BirthDate = birthDate;
                 HelathInsuranceCode = insuranceCompanyCode;
                 _actualLengthOfname = Name.Length;
                 _actualLengthOfsurename = Surename.Length;
@@ -157,7 +166,8 @@ namespace AUS2_MichalMurin_HashFile.Models
             string result = $"Pacient {Name} {Surename}, rodne cislo: {BirthNum}, narodeny: {BirthDate.ToString("dd.MM.yyyy")}, poistovna: {HelathInsuranceCode} , Hospitalizacie:\n";
             foreach (var hosp in Hospitalizations)
             {
-                result += hosp.ToString() + "\n\t";
+                if(hosp.Id != -1)
+                    result += hosp.ToString() + "\n\t";
             }
             return result;
         }
@@ -167,6 +177,55 @@ namespace AUS2_MichalMurin_HashFile.Models
             return $"{Name};{Surename};{BirthNum}";
         }
 
+        public Hospitalization? GetHospitalizationById(int id)
+        {
+            for (int i = 0; i < Hospitalizations.Length; i++)
+            {
+                if (Hospitalizations[i].Id == id)
+                    return Hospitalizations[i];
+            }
+            return null;
+        }
+
+        public bool TryToAddHospitalization(Hospitalization hosp)
+        {
+            for (int i = 0; i < Hospitalizations.Length; i++)
+            {
+                if (Hospitalizations[i].Id == -1)
+                {
+                    hosp.Id = i;
+                    Hospitalizations[i] = hosp;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool TryToEndHospitalization(DateTime end)
+        {
+            for (int i = 0; i < Hospitalizations.Length; i++)
+            {
+                if (Hospitalizations[i].Id != -1 && Hospitalizations[i].endDate == DateTime.MaxValue)
+                {
+                    Hospitalizations[i].endDate = end;
+                    return true;          
+                }
+            }
+            return false;
+        }
+
+        public bool TryToDeleteHospitalization(int id)
+        {
+            for (int i = 0; i < Hospitalizations.Length; i++)
+            {
+                if (Hospitalizations[i].Id == id)
+                {
+                    Hospitalizations[i].Id = -1;
+                    return true;
+                }
+            }
+            return false;
+        }
 
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile.Service
 {
-    internal enum HashType
+    public enum HashType
     {
         StaticHash = 0,
         DynamicHash = 1

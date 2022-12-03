@@ -10,7 +10,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 {
     public abstract class Hashing<T> where T: IData<T>
     {
-        public FileStream File { get; set; }
+        public FileStream HashFile { get; set; }
         public int BlockFactor { get; set; }
 
         public Hashing(string pFileName, int pBlockFactor)
@@ -18,11 +18,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             BlockFactor = pBlockFactor;
             try
             {
-                File = new FileStream(pFileName,FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                HashFile = new FileStream(pFileName,FileMode.OpenOrCreate, FileAccess.ReadWrite);
             }
             catch (FileNotFoundException)
             {
-                throw new FieldAccessException($"File {pFileName} is not acceccible!");
+                throw new FieldAccessException($"HashFile {pFileName} is not acceccible!");
             }
         }
         protected (Block<T>?, long) FindBlock(T data)
@@ -54,6 +54,28 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
             return default(T);
         }
+
+        public bool UpdateData(T data)
+        {
+            var result = FindBlock(data);
+            var block = result.Item1;
+            if (block != null)
+            {
+                for (int i = 0; i < block.Records.Count; i++)
+                {
+                    if (i < block.ValidCount)
+                    {
+                        if (data.MyEquals(block.Records[i]))
+                        {
+                            block.Records[i] = data;
+                            TryWriteBlockToFile(GetOffset(data.GetHash()), block);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
         public abstract bool Insert(T data);
 
         public abstract bool Delete(T data);
@@ -64,8 +86,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         {
             try
             {
-                File.Seek(offset, SeekOrigin.Begin);
-                File.Write(block.ToByteArray());
+                HashFile.Seek(offset, SeekOrigin.Begin);
+                HashFile.Write(block.ToByteArray());
             }
             catch (IOException e)
             {
@@ -80,8 +102,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             byte[] blockBytes = new byte[blockSize];
             try
             {
-                File.Seek(offset, SeekOrigin.Begin);
-                File.Read(blockBytes);
+                HashFile.Seek(offset, SeekOrigin.Begin);
+                HashFile.Read(blockBytes);
             }
             catch (IOException e)
             {
@@ -91,29 +113,43 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return block;
         }
 
-        public abstract void ExportAppDataToFile(string path);
+       // public abstract void ExportAppDataToFile(string path);
 
-        public abstract void LoadAppDataFromFile(string path);
+       // public abstract void LoadAppDataFromFile(string path);
+       public void SaveBaseDataToFile(string path)
+        {
+            File.WriteAllText(path, $"{BlockFactor};{HashFile.Name}");
+        }
+
+        // vraciam blok faktor a cestu k suboru
+        public static (int, string) LoadBaseDataFromFile(string path)
+        {
+            string line = File.ReadAllText(path);
+            var results = line.Split(";");
+            int BlFactor;
+            int.TryParse(results[0], out BlFactor);
+            return (BlFactor, results[1]);
+        }
 
         public void ConsoleWriteSequence()
         {
-            File.Seek(0, SeekOrigin.Begin);
+            HashFile.Seek(0, SeekOrigin.Begin);
             // TODO Otestuj ci sedi pocwt blokov
             Block<T> block = new Block<T>(BlockFactor);
-            long blockCount = File.Length/block.GetSize();
+            long blockCount = HashFile.Length/block.GetSize();
             for (long i = 0; i < blockCount; i++)
             {
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {
-                    File.Read(blockBytes);
+                    HashFile.Read(blockBytes);
                 }
                 catch (Exception)
                 {
                     throw;
                 }
                 block.FromByteArray(blockBytes);
-                Console.WriteLine($"ADRESA: {File.Position}");
+                Console.WriteLine($"ADRESA: {HashFile.Position}");
                 Console.WriteLine($"Blok cislo {i}: Valid count = {block.ValidCount}");
                 foreach (var rec in block.Records)
                 {
@@ -122,9 +158,37 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
+        public List<string> GetSequenceOfBlocks()
+        {
+            var result = new List<string>();
+            HashFile.Seek(0, SeekOrigin.Begin);
+            Block<T> block = new Block<T>(BlockFactor);
+            long blockCount = HashFile.Length / block.GetSize();
+            for (long i = 0; i < blockCount; i++)
+            {
+                byte[] blockBytes = new byte[block.GetSize()];
+                try
+                {
+                    HashFile.Read(blockBytes);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                block.FromByteArray(blockBytes);
+                result.Add($"ADRESA: {HashFile.Position}");
+                result.Add($"Blok cislo {i}: Valid count = {block.ValidCount}");
+                foreach (var rec in block.Records)
+                {
+                    result.Add($"\t{rec.ToString()}");
+                }
+            }
+            return result;
+        }
+
         public void DisposeFile()
         {
-            File.Dispose();
+            HashFile.Dispose();
         }
     }
 }

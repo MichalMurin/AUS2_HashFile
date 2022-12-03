@@ -42,6 +42,26 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                 return false;
             }
         }
+
+        public void insertLeftSon(TrieNode newLeftSon)
+        {
+            if (LeftSon != null)
+            {
+                LeftSon.Parent = null;
+            }
+            LeftSon = newLeftSon;
+            newLeftSon.Parent = this;
+        }
+        public void insertRightSon(TrieNode newRightSon)
+        {
+            if (RightSon != null)
+            {
+                RightSon.Parent = null;
+            }
+            RightSon = newRightSon;
+            newRightSon.Parent = this;
+        }
+
         /// <summary>
         /// Metoda na zistenie, ci ma vrchol laveho syna
         /// </summary>

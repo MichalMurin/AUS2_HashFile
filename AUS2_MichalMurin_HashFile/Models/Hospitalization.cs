@@ -27,9 +27,9 @@ namespace AUS2_MichalMurin_HashFile.Models
         public DateTime endDate { get; set; }
         public string Diagnosis { get; set; }
 
-        public Hospitalization(int id, string diagnosis, DateTime startDate, DateTime endDate)
+        public Hospitalization(string diagnosis, DateTime startDate, DateTime endDate)
         {
-            Id = id;
+            Id = -1;
             Diagnosis = diagnosis;
             this.startDate = startDate;
             this.endDate = endDate;
@@ -38,8 +38,8 @@ namespace AUS2_MichalMurin_HashFile.Models
 
         public Hospitalization()
         {
-            Id = 0;
-            startDate = DateTime.Now;
+            Id = -1;
+            startDate = DateTime.MinValue;
             endDate = DateTime.MaxValue;
             Diagnosis = "";
             ActualDiagnosisLength = Diagnosis.Length;

@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Faker;
+using AUS2_MichalMurin_HashFile.Models;
+using System.Collections;
+using System.Reflection.Emit;
+
 namespace AUS2_MichalMurin_HashFile.Service
 {
     /// <summary>
@@ -15,6 +19,32 @@ namespace AUS2_MichalMurin_HashFile.Service
         internal DataGenerator()
         {
             r = new Random();
+        }
+
+        public Patient getRndPatient()
+        {
+            var birthDate = GetRandomDate(DateTime.Now.AddYears(-100), DateTime.Now);
+            var birthNum = getBirthNum(birthDate);
+            var name = GetRandomName();
+            var surename = GetRandomSurname();
+
+            var patient = new Patient(name, surename, birthNum, BitConverter.GetBytes(r.Next(255))[0]);
+            int numberOfHospitalizations = r.Next(patient.Hospitalizations.Length - 1);
+            string diagnosis;
+            DateTime start, end;
+            int rndNum;
+            for (int i = 0; i < numberOfHospitalizations; i++)
+            {
+                diagnosis = GetRandomDiagnosis();
+                start = GetRandomDate(DateTime.Now.AddYears(-r.Next(1, 5)), DateTime.Now);
+                rndNum = r.Next(0, 100) % 2;
+                end = GetRandomDate(start, DateTime.Now);
+                if (i == numberOfHospitalizations - 1)
+                    end = DateTime.MaxValue; // poslednej hospitalizacii nastavime ze je este aktualna
+                patient.Hospitalizations[i] = new Hospitalization(diagnosis, start, end);
+                patient.Hospitalizations[i].Id = i;
+            }
+            return patient;
         }
 
         internal DateTime GetRandomDate(DateTime start, DateTime end)

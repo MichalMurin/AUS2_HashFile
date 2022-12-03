@@ -155,7 +155,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         private void HandleEmptyBlocks(Block<T> emptyBlock, ExternNode exNode)
         {
             var blockSize = emptyBlock.GetSize();
-            var fileLength = File.Length;
+            var fileLength = HashFile.Length;
             if (fileLength - blockSize == exNode.Offset)
             {
                 // zmensim velkost suboru
@@ -168,7 +168,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     EmptyBlocksOffsetes.Remove(fileLength - blockSize);
                 }
                 // prazdne bloky by nemali byt v strome trie, takze ich nemusime odtial odstranovat
-                File.SetLength(fileLength);
+                HashFile.SetLength(fileLength);
                 // ked som zmensil subor, nepotrebujem do neho uz zapisovat prazdny blok
             }
             else
@@ -193,8 +193,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             else
             {
                 // ak nemame volnu adresu, zvacsujeme subor
-                adressForNewBlock = File.Length;
-                File.SetLength(File.Length + trie.BlockSize);
+                adressForNewBlock = HashFile.Length;
+                HashFile.SetLength(HashFile.Length + trie.BlockSize);
             }
             node.Offset = adressForNewBlock;
         }
@@ -328,14 +328,31 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
-        public override void ExportAppDataToFile(string path)
+        public void ExportAppDataToFile(string pathForTrie, string pathForEmptyBlocks)
         {
-           
+            trie.SaveToFile(pathForTrie);
+            var offsetsString = new List<string>();
+            foreach (var item in EmptyBlocksOffsetes)
+            {
+                offsetsString.Add(item.ToString());
+            }
+            File.WriteAllLines(pathForEmptyBlocks, offsetsString);
+
         }
 
-        public override void LoadAppDataFromFile(string path)
+        public static (Trie.Trie, List<long>) LoadAppDataFromFile(string pathForTrie, string pathForEmptyBlocks)
         {
-            throw new NotImplementedException();
+            var itemsForTrie = Trie.Trie.GetLeafesFromFile(pathForTrie);
+            var trie = new Trie.Trie(itemsForTrie.Item3, itemsForTrie.Item1, itemsForTrie.Item2);
+            var linesOfEmptyBlocks = File.ReadLines(pathForEmptyBlocks);
+            List<long> emptyOffsets = new List<long>();
+            long tmp;
+            foreach (var line in linesOfEmptyBlocks)
+            {
+                long.TryParse(line, out tmp);
+                emptyOffsets.Add(tmp);
+            }
+            return (trie, emptyOffsets);
         }
     }
 }

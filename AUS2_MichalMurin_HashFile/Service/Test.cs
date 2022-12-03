@@ -29,19 +29,16 @@ namespace AUS2_MichalMurin_HashFile.Service
                 hash = new DynamicHashing<Patient>("TESTING", blockFactor);
             else
                 throw new ArgumentException("Invalid hash type");
-        }
+        }        
 
-        private Patient getRndPatient()
+        private Patient GetPatient()
         {
-            while (true)
+            while(true)
             {
-                var birthDate = generator.GetRandomDate(DateTime.Now.AddYears(-100), DateTime.Now);
-                var birthNum = generator.getBirthNum(birthDate);
-                if (!setOfBirthNums.Add(birthNum))
+                var pat = generator.getRndPatient();
+                if (!setOfBirthNums.Add(pat.BirthNum))
                     continue;
-                var name = generator.GetRandomName();
-                var surename = generator.GetRandomSurname();
-                return new Patient(name, surename, birthNum, birthDate, BitConverter.GetBytes(rand.Next(255))[0]);
+                return pat;
             }
         }
 
@@ -52,7 +49,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             for (int i = 0; i < tmp.Length; i++)
             {
                 var items = tmp[i].Split(";");
-                listofPatients.Add(new Patient(items[0], items[1], items[2], DateTime.Now, 1));
+                listofPatients.Add(new Patient(items[0], items[1], items[2],  1));
             }
             return listofPatients;
         }
@@ -78,15 +75,15 @@ namespace AUS2_MichalMurin_HashFile.Service
         private List<string> GetListOfBirthunmsInFile()
         {
             List<string> retList = new List<string>();
-            hash.File.Seek(0, SeekOrigin.Begin);
+            hash.HashFile.Seek(0, SeekOrigin.Begin);
             Block<Patient> block = new Block<Patient>(hash.BlockFactor);
-            long blockCount = hash.File.Length / block.GetSize();
+            long blockCount = hash.HashFile.Length / block.GetSize();
             for (long i = 0; i < blockCount; i++)
             {
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
                 {
-                    hash.File.Read(blockBytes);
+                    hash.HashFile.Read(blockBytes);
                 }
                 catch (Exception)
                 {
@@ -125,7 +122,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
             while (listofPatients.Count != initialSize)
             {
-                var patient = getRndPatient();
+                var patient = GetPatient();
                 listofPatients.Add(patient);
                 bool success = hash.Insert(patient);
                 if (hash.GetType() == typeof(StaticHashing<Patient>) && !success)
@@ -180,7 +177,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             {
                 for (int j = 0; j < step; j++)
                 {
-                    data = getRndPatient();
+                    data = GetPatient();
                     if (hash.Insert(data))
                         listofPatients.Add(data);
                 }
@@ -188,7 +185,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                 operationNumber = rand.Next(0, 3);
                 if (operationNumber == 0)
                 {
-                    data = getRndPatient();
+                    data = GetPatient();
                     stopwatchInsert.Start();
                     result = hash.Insert(data);
                     stopwatchInsert.Stop();
@@ -241,7 +238,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                     rndIndex = rand.Next(0, listofPatients.Count);
                     if (listofPatients.Count == 0)
                     {
-                        data = getRndPatient();
+                        data = GetPatient();
                         if (hash.Insert(data))
                             listofPatients.Add(data);
                     }
