@@ -14,7 +14,7 @@ using System.Xml.Linq;
 
 namespace AUS2_MichalMurin_HashFile.Models
 {
-    internal class Patient: IData<Patient>
+    public class Patient: IData<Patient>
     {
         private const int MAX_NAME_LENGHT = 15;
         private const int MAX_SURENAME_LENGTH = 20;
@@ -32,7 +32,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         private int _actualLengthOfbirthnumber;
 
 
-        internal Patient()
+        public Patient()
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
             //Array.Fill(Hospitalizations, new Hospitalization());

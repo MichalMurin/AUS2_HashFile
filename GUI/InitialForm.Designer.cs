@@ -161,7 +161,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.groupBox1);
             this.Name = "InitialForm";
-            this.Text = "InitialForm";
+            this.Text = "Hash File";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BlockFaktorNum)).EndInit();
