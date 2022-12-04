@@ -17,7 +17,7 @@ namespace AUS2_MichalMurin_HashFile.Service
         private DataGenerator generator = new DataGenerator();
         private Random rand = new Random();
         private HashSet<string> setOfBirthNums = new HashSet<string>();
-        public Test(int blockFactor, HashType type, int blockCount = 0)
+        internal Test(int blockFactor, HashType type, int blockCount = 0)
         {
             if (File.Exists(@"TESTING"))
             {
@@ -97,7 +97,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             }
             return retList;
         }
-        public bool runTest(int initialSize, int numberOfOperations, int step = 0, bool checkAllDataAfterEachOperation = false)
+        internal bool runTest(int initialSize, int numberOfOperations, int step = 0, bool checkAllDataAfterEachOperation = false)
         {
             var type = hash.GetType() == typeof(StaticHashing<Patient>) ? "STATICKY" : "DYNAMICKY";
             Console.WriteLine($"START TESTU - testujeme {type} hash file o inicializacnej velkosti {initialSize}, pocet operacii: {numberOfOperations}");
@@ -134,7 +134,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                 else
                 {
                     Patient? patient2 = hash.Find(patient);
-                    if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
+                    if (!success || patient2 == null || !patient2.MyEquals(patient))
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
@@ -194,7 +194,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                     {
                         listofPatients.Add(data);
                         var patientToCompare = hash.Find(data);
-                        if (patientToCompare == null || patientToCompare.BirthNum != data.BirthNum)
+                        if (patientToCompare == null || !patientToCompare.MyEquals(data))
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
@@ -221,7 +221,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                     var item = hash.Find(dataToFind);
                     stopwatchFind.Stop();
                     numberOfFind++;
-                    if (item == null || item.BirthNum != dataToFind.BirthNum)
+                    if (item == null || item.MyEquals(dataToFind))
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Nepodarilo sa najst prvok - TEST ZLYHAL - Find()");

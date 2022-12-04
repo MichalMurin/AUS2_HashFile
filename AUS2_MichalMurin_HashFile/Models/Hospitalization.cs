@@ -9,25 +9,25 @@ namespace AUS2_MichalMurin_HashFile.Models
 {
     internal class Hospitalization
     {
-        public static int MaxDiagnosisLenght { get
+        internal static int MaxDiagnosisLenght { get
             {
                 return 20;
             } 
         }
-        public static int Size
+        internal static int Size
         {
             get
             {
                 return sizeof(int) * 2 + sizeof(long) * 2 + MaxDiagnosisLenght + 1;
             }
         }
-        public int ActualDiagnosisLength { get; set; }
-        public int Id { get; set; }
-        public DateTime startDate { get; set; }
-        public DateTime endDate { get; set; }
-        public string Diagnosis { get; set; }
+        internal int ActualDiagnosisLength { get; set; }
+        internal int Id { get; set; }
+        internal DateTime startDate { get; set; }
+        internal DateTime endDate { get; set; }
+        internal string Diagnosis { get; set; }
 
-        public Hospitalization(string diagnosis, DateTime startDate, DateTime endDate)
+        internal Hospitalization(string diagnosis, DateTime startDate, DateTime endDate)
         {
             Id = 0;
             Diagnosis = diagnosis;
@@ -36,7 +36,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             ActualDiagnosisLength = Diagnosis.Length;
         }
 
-        public Hospitalization()
+        internal Hospitalization()
         {
             Id = 0;
             startDate = DateTime.MinValue;

@@ -6,24 +6,24 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
-    public class InternNode: TrieNode
+    internal class InternNode: TrieNode
     {
         /// <summary>
         /// Lavy syn vrcholu
         /// </summary>
-        public TrieNode? LeftSon { get; set; }
+        internal TrieNode? LeftSon { get; set; }
         /// <summary>
         /// Pravy syn vrcholu
         /// </summary>
-        public TrieNode? RightSon { get; set; }
+        internal TrieNode? RightSon { get; set; }
 
-        public InternNode(InternNode? parent = null) : base(parent)
+        internal InternNode(InternNode? parent = null) : base(parent)
         {
             LeftSon = null;
             RightSon = null;
         }
 
-        public bool ReplaceSon(TrieNode oldSon, TrieNode newSon)
+        internal bool ReplaceSon(TrieNode oldSon, TrieNode newSon)
         {
             if(RightSon == oldSon)
             {
@@ -43,7 +43,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             }
         }
 
-        public void insertLeftSon(TrieNode newLeftSon)
+        internal void insertLeftSon(TrieNode newLeftSon)
         {
             if (LeftSon != null)
             {
@@ -52,7 +52,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             LeftSon = newLeftSon;
             newLeftSon.Parent = this;
         }
-        public void insertRightSon(TrieNode newRightSon)
+        internal void insertRightSon(TrieNode newRightSon)
         {
             if (RightSon != null)
             {
@@ -66,7 +66,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// Metoda na zistenie, ci ma vrchol laveho syna
         /// </summary>
         /// <returns>True - ak ma laveho syna, inak False</returns>
-        public bool HasLeftSon()
+        internal bool HasLeftSon()
         {
             return LeftSon != null;
         }
@@ -74,7 +74,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// Metoda na zistenie, ci ma vrchol praveho syna
         /// </summary>
         /// <returns>True - ak ma praveho syna, inak False</returns>
-        public bool HasRightSon()
+        internal bool HasRightSon()
         {
             return RightSon != null;
         }

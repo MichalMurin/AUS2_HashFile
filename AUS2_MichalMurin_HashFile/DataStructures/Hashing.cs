@@ -8,13 +8,13 @@ using System.Collections;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
-    public abstract class Hashing<T> where T: IData<T>
+    internal abstract class Hashing<T> where T: IData<T>
     {
-        public FileStream HashFile { get; set; }
-        public int BlockFactor { get; set; }
-        public int BlockSize { get; private set; }
-        public static string _pathToBaseData { get; } = "baseData.csv";
-        public Hashing(string pFileName, int pBlockFactor)
+        internal FileStream HashFile { get; set; }
+        internal int BlockFactor { get; set; }
+        internal int BlockSize { get; private set; }
+        internal static string _pathToBaseData { get; } = "baseData.csv";
+        internal Hashing(string pFileName, int pBlockFactor)
         {
             BlockSize = new Block<T>(pBlockFactor).GetSize();
             BlockFactor = pBlockFactor;
@@ -39,7 +39,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             else
                 return (null, -1);
         }
-        public T? Find(T data)
+        internal T? Find(T data)
         {
             var result = FindBlock(data);
             var block = result.Item1;
@@ -57,7 +57,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return default(T);
         }
 
-        public bool UpdateData(T data)
+        internal bool UpdateData(T data)
         {
             var result = FindBlock(data);
             var block = result.Item1;
@@ -78,9 +78,9 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
             return false;
         }
-        public abstract bool Insert(T data);
+        internal abstract bool Insert(T data);
 
-        public abstract bool Delete(T data);
+        internal abstract bool Delete(T data);
 
         protected abstract long GetOffset(BitArray hash);
 
@@ -115,15 +115,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return block;
         }
 
-       public abstract void ExportAppDataToFile();
+        internal abstract void ExportAppDataToFile();
 
-       public void SaveBaseDataToFile()
+        internal void SaveBaseDataToFile()
         {
             File.WriteAllText(_pathToBaseData, $"{BlockFactor};{HashFile.Name}");
         }
 
         // vraciam blok faktor a cestu k suboru
-        public static (int, string) LoadBaseDataFromFile()
+        internal static (int, string) LoadBaseDataFromFile()
         {
             string line = File.ReadAllText(_pathToBaseData);
             var results = line.Split(";");
@@ -132,7 +132,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return (BlFactor, results[1]);
         }
 
-        public void ConsoleWriteSequence()
+        internal void ConsoleWriteSequence()
         {
             HashFile.Seek(0, SeekOrigin.Begin);
             // TODO Otestuj ci sedi pocwt blokov
@@ -159,7 +159,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
-        public List<string> GetSequenceOfBlocks()
+        internal List<string> GetSequenceOfBlocks()
         {
             var result = new List<string>();
             HashFile.Seek(0, SeekOrigin.Begin);
@@ -191,7 +191,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return result;
         }
 
-        public void DisposeAndCloseFile()
+        internal void DisposeAndCloseFile()
         {
             HashFile.Dispose();
             HashFile.Close();

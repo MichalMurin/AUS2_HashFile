@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="GUI.AddHospitalizationView">
+    <Position X="0.75" Y="6" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACBAAQcAAAKAAAACBEAgiAAAICAAAAIAAAA=</HashCode>
+      <FileName>AddHospitalizationView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.AddPatientView">
+    <Position X="3.5" Y="5.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AQiAAAAAQiAAAAAQAACJAAACQAAgBAAAIAAIQAAAIAA=</HashCode>
+      <FileName>AddPatientView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.DeleteHospitalizationView">
+    <Position X="9.25" Y="5.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAASAAABAAAACAAAACAAAgCAAgACAAAAAAAAA=</HashCode>
+      <FileName>DeleteHospitalizationView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.DeletePatientView">
+    <Position X="23.25" Y="6" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAACAAABAAAACABAACAAAgCAAAACAAAAAAAAA=</HashCode>
+      <FileName>DeletePatientView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.EndHospitalizationView">
+    <Position X="20.75" Y="6" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAACAwAAAAACCAAAACAAAgAAAAAAgAAGggAQA=</HashCode>
+      <FileName>EndHospitalizationView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.GenerateDataView">
+    <Position X="6.5" Y="5.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAQAACAAAAigCAoAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GenerateDataView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.InitialForm">
+    <Position X="17.25" Y="5.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>UAAAAAAAACAAINAAAAKAAAACAgAgAAAAACAAAAAAAAQ=</HashCode>
+      <FileName>InitialForm.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.MainWindowView">
+    <Position X="12.5" Y="5.75" Width="4.5" />
+    <TypeIdentifier>
+      <HashCode>ACABADQCICAAIFAQAECEQQACCAAoABAUAGgAgAASIAA=</HashCode>
+      <FileName>MainWindowView.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="presenter" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GUI.ShowTextView">
+    <Position X="9.75" Y="9.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAEACAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ShowTextView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Presenter.Presenter">
+    <Position X="9.25" Y="0.75" Width="2.5" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

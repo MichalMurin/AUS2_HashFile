@@ -10,20 +10,20 @@ using System.Xml.Linq;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
-    public class Trie
+    internal class Trie
     {
         //internal int BlockFactor { get;}
         /// <summary>
         /// Koren stromu
         /// </summary>
 
-       // public int BlockSize { get;}
+        // public int BlockSize { get;}
         internal InternNode? Root { get; private set; }
 
         /// <summary>
         /// Bezparametricky konstruktor
         /// </summary>
-        public Trie()
+        internal Trie()
         {
             Root = new InternNode();
             Root.LeftSon = new ExternNode(-1, 0, Root);
@@ -31,7 +31,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
            // BlockFactor = pBlockFactor;
            // BlockSize = pBlockSize;
         }
-        public Trie(List<(ExternNode, BitArray)> listOfExternNodes)
+        internal Trie(List<(ExternNode, BitArray)> listOfExternNodes)
         {
             if (listOfExternNodes.Count < 2)
             {
@@ -92,7 +92,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         /// </summary>
         /// <param name="pData">Hladane data</param>
         /// <returns>(True, hladany vrchol, kolky bit sa pouziva) - ak je hladanie uspesne, inak (False, Vrchol kde hladanie skoncilo)</returns>
-        public (bool, ExternNode?, int) FindExternNode(BitArray pData)
+        internal (bool, ExternNode?, int) FindExternNode(BitArray pData)
         {
             TrieNode? resultNode = Root;
             if (resultNode == null)
@@ -165,7 +165,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             return resultList;
         }
 
-        public void SaveToFile(string path)
+        internal void SaveToFile(string path)
         {
             List<string> content = new List<string>();
            // content.Add($"{BlockSize};{BlockFactor}");
@@ -187,7 +187,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             File.WriteAllLines(path, content);
         }
 
-        public static List<(ExternNode, BitArray)> GetLeafesFromFile(string path)
+        internal static List<(ExternNode, BitArray)> GetLeafesFromFile(string path)
         {
             List<(ExternNode, BitArray)> resultList = new List<(ExternNode, BitArray)>();
             var lines = File.ReadAllLines(path);

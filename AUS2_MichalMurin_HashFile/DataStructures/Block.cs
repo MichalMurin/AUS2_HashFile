@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile
 {
-    public class Block<T> : IRecord<T> where T : IData<T>
+    internal class Block<T> : IRecord<T> where T : IData<T>
     {
-        public int BlockFactor { get; private set; }
-        public int ValidCount { get; set; }
-        public List<T> Records { get; set; }
+        internal int BlockFactor { get; private set; }
+        internal int ValidCount { get; set; }
+        internal List<T> Records { get; set; }
 
-        public Block(int pBlockFactor)
+        internal Block(int pBlockFactor)
         {
             BlockFactor = pBlockFactor;
             Records = new List<T>(pBlockFactor);
@@ -32,7 +32,7 @@ namespace AUS2_MichalMurin_HashFile
             }
             ValidCount = 0;
         }
-        public bool InsertRecord(T pNew)
+        internal bool InsertRecord(T pNew)
         {
             if(ValidCount < BlockFactor)
             {
@@ -44,7 +44,7 @@ namespace AUS2_MichalMurin_HashFile
             return false;
         }
 
-        public bool RemoveRecord(T pRecord)
+        internal bool RemoveRecord(T pRecord)
         {
             for (int i = 0; i < ValidCount; i++)
             {

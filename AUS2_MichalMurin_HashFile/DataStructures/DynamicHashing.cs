@@ -14,20 +14,20 @@ using AUS2_MichalMurin_HashFile.Service;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
-    public class DynamicHashing<T> : Hashing<T> where T : IData<T>
+    internal class DynamicHashing<T> : Hashing<T> where T : IData<T>
     {
-        public Trie.Trie trie { get; set; }
-        public List<long> EmptyBlocksOffsetes { get; set; }
+        internal Trie.Trie trie { get; set; }
+        internal List<long> EmptyBlocksOffsetes { get; set; }
 
-        public static string _pathForTrieData { get; } = "Trie.csv";
-        public static string _pathForEmptyBlocksData { get; } = "EmptyBlocks.csv";
-        public DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
+        internal static string _pathForTrieData { get; } = "Trie.csv";
+        internal static string _pathForEmptyBlocksData { get; } = "EmptyBlocks.csv";
+        internal DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {            
             trie = new Trie.Trie();
             EmptyBlocksOffsetes = new List<long>();
         }
 
-        public DynamicHashing(Trie.Trie trie, List<long> emptyBlocksOffsetes, string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
+        internal DynamicHashing(Trie.Trie trie, List<long> emptyBlocksOffsetes, string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {
             this.trie = trie;
             EmptyBlocksOffsetes = emptyBlocksOffsetes;
@@ -45,7 +45,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         }
 
-        public override bool Insert(T data)
+        internal override bool Insert(T data)
         {
             var hash = data.GetHash();
             var result = trie.FindExternNode(hash);
@@ -79,7 +79,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return false;
 
         }
-        public override bool Delete(T data)
+        internal override bool Delete(T data)
         {
             var hash = data.GetHash();
             var result = trie.FindExternNode(hash);
@@ -361,7 +361,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
-        public override void ExportAppDataToFile()
+        internal override void ExportAppDataToFile()
         {
             trie.SaveToFile(_pathForTrieData);
             var offsetsString = new List<string>();
@@ -372,7 +372,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             File.WriteAllLines(_pathForEmptyBlocksData, offsetsString);
         }
 
-        public static (Trie.Trie, List<long>) LoadDynamicDataFromFile()
+        internal static (Trie.Trie, List<long>) LoadDynamicDataFromFile()
         {
             var itemsForTrie = Trie.Trie.GetLeafesFromFile(_pathForTrieData);
             var trie = new Trie.Trie(itemsForTrie);

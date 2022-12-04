@@ -6,28 +6,28 @@ using System.Threading.Tasks;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
-    public class ExternNode: TrieNode
+    internal class ExternNode: TrieNode
     {
-        public int RecordsCount { get; set; }
-        public long Offset { get; set; }
+        internal int RecordsCount { get; set; }
+        internal long Offset { get; set; }
 
-        public ExternNode(long pOffset, int pRecordsCount, InternNode? parent = null) : base(parent)
+        internal ExternNode(long pOffset, int pRecordsCount, InternNode? parent = null) : base(parent)
         {
             Offset = pOffset;
             RecordsCount = pRecordsCount;
         }
-        public ExternNode(ExternNode otherNode)
+        internal ExternNode(ExternNode otherNode)
         {
             RecordsCount = otherNode.RecordsCount;
             Offset = otherNode.Offset;
             this.Parent = otherNode.Parent;
         }
-        public bool IsLeftSon()
+        internal bool IsLeftSon()
         {
             return ((InternNode)Parent!).LeftSon == this;
         }
 
-        public ExternNode? GetBrother()
+        internal ExternNode? GetBrother()
         {
             if(IsLeftSon() && this.Parent!.RightSon != null && this.Parent.RightSon.GetType() == typeof(ExternNode))
             {

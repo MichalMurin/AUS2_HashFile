@@ -11,7 +11,7 @@ namespace AUS2_MichalMurin_HashFile.Models
 {
     internal class HealthCard
     {
-        public Hashing<Patient> Patients { get; set; }
+        internal Hashing<Patient> Patients { get; set; }
         private static string _dataFilePath = "PATIENTS";
 
         internal HealthCard(HashType type, int blockFactor, int blockCount=-1)
@@ -199,12 +199,12 @@ namespace AUS2_MichalMurin_HashFile.Models
                 return false;
         }
 
-        public List<string> SequencePrint()
+        internal List<string> SequencePrint()
         {
             return Patients.GetSequenceOfBlocks();
         }
 
-        public static (bool, HashType?) FindConfigFiles()
+        internal static (bool, HashType?) FindConfigFiles()
         {
             if (File.Exists(_dataFilePath) && File.Exists(Hashing<Patient>._pathToBaseData))
             {
@@ -220,7 +220,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return (false, null);
         }
 
-        public void DeleteData()
+        internal void DeleteData()
         {
             if(Patients != null)
                 Patients.DisposeAndCloseFile(); 
@@ -246,7 +246,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             }
         }
 
-        public void Save()
+        internal void Save()
         {
             Patients.SaveBaseDataToFile();
             Patients.ExportAppDataToFile();

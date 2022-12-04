@@ -11,9 +11,9 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 {
     internal class StaticHashing<T> : Hashing<T> where T : IData<T>
     {
-        public int TotalBlockCount { get; set; }
-        public static string _pathForStaticFileData { get; } = "staticHashData.csv";
-        public StaticHashing(string pFileName, int pBlockFactor, int pBlockCount) : base(pFileName, pBlockFactor)
+        internal int TotalBlockCount { get; set; }
+        internal static string _pathForStaticFileData { get; } = "staticHashData.csv";
+        internal StaticHashing(string pFileName, int pBlockFactor, int pBlockCount) : base(pFileName, pBlockFactor)
         {
             TotalBlockCount = pBlockCount;
         }
@@ -28,7 +28,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return offset;
         }
 
-        public override bool Insert(T data)
+        internal override bool Insert(T data)
         {
             var result = FindBlock(data);
             var block = result.Item1;
@@ -42,7 +42,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         }
 
 
-        public override bool Delete(T data)
+        internal override bool Delete(T data)
         {
             var result = FindBlock(data);
             var block = result.Item1;
@@ -54,8 +54,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
             return success;
         }
-        
-        public static int LoadStaticDataFromFile()
+
+        internal static int LoadStaticDataFromFile()
         {
             string line = File.ReadAllText(_pathForStaticFileData);
             int BlockCount;
@@ -63,7 +63,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return BlockCount;
         }
 
-        public override void ExportAppDataToFile()
+        internal override void ExportAppDataToFile()
         {
             File.WriteAllText(_pathForStaticFileData, $"{TotalBlockCount}");
         }

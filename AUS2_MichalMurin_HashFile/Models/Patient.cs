@@ -20,19 +20,19 @@ namespace AUS2_MichalMurin_HashFile.Models
         private const int MAX_SURENAME_LENGTH = 20;
         private const int MAX_BIRTHNUM_LENGHT = 10;
         private const int MAX_NUMBER_OF_HOSPITALIZATION = 10;
-        public string Name { get; set; }
-        public string Surename { get; set; }
-        public string BirthNum { get; set; }
-        public DateTime BirthDate { get; set; }
-        public byte HelathInsuranceCode { get; set; }
-        public Hospitalization?[] Hospitalizations { get; set; }
+        internal string Name { get; set; }
+        internal string Surename { get; set; }
+        internal string BirthNum { get; set; }
+        internal DateTime BirthDate { get; set; }
+        internal byte HelathInsuranceCode { get; set; }
+        internal Hospitalization?[] Hospitalizations { get; set; }
         //private int _actualNumberOfHospitalizations = 0;
         private int _actualLengthOfname;
         private int _actualLengthOfsurename;
         private int _actualLengthOfbirthnumber;
 
 
-        public Patient()
+        internal Patient()
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
             //Array.Fill(Hospitalizations, new Hospitalization());
@@ -46,7 +46,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             BirthDate = DateTime.Now;
             HelathInsuranceCode = 0;
         }
-        public Patient(string birthNum)
+        internal Patient(string birthNum)
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
             //Array.Fill(Hospitalizations, new Hospitalization());
@@ -60,7 +60,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             BirthDate = GetBirthDate(birthNum);
             HelathInsuranceCode = 0;
         }
-        public Patient(string name, string surename, string birthnum, byte insuranceCompanyCode)
+        internal Patient(string name, string surename, string birthnum, byte insuranceCompanyCode)
         {
             if (name.Length > MAX_NAME_LENGHT ||
                 surename.Length > MAX_SURENAME_LENGTH ||
@@ -197,7 +197,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return result;
         }
 
-        public Hospitalization? GetHospitalizationById(int id)
+        internal Hospitalization? GetHospitalizationById(int id)
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
@@ -207,7 +207,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return null;
         }
 
-        public bool TryToAddHospitalization(Hospitalization hosp)
+        internal bool TryToAddHospitalization(Hospitalization hosp)
         {
             if (IsActuallyHospitalized())
                 return false;
@@ -223,7 +223,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return false;
         }
 
-        public bool IsActuallyHospitalized()
+        internal bool IsActuallyHospitalized()
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
@@ -234,7 +234,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             }
             return false;
         }
-        public bool TryToEndHospitalization(DateTime end)
+        internal bool TryToEndHospitalization(DateTime end)
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
@@ -247,7 +247,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return false;
         }
 
-        public bool TryToDeleteHospitalization(int id)
+        internal bool TryToDeleteHospitalization(int id)
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {

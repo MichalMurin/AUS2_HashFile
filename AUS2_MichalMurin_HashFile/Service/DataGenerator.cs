@@ -21,7 +21,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             r = new Random();
         }
 
-        public Patient getRndPatient()
+        internal Patient getRndPatient()
         {
             var birthDate = GetRandomDate(DateTime.Now.AddYears(-100), DateTime.Now);
             var birthNum = getBirthNum(birthDate);

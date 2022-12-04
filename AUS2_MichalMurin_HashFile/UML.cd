@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.Trie.ExternNode">
+    <Position X="0.5" Y="9.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAAAAAAACAAgAAAAAgAA=</HashCode>
+      <FileName>DataStructures\Trie\ExternNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.Trie.InternNode">
+    <Position X="2.75" Y="9.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAhAAAQAAAAAAAAAAAAkAABAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataStructures\Trie\InternNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.Trie.Trie">
+    <Position X="4" Y="6.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAgAAAAACAAAAAAAAAAAAAAACAAEAAAAAAAAAA=</HashCode>
+      <FileName>DataStructures\Trie\Trie.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Root" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.Trie.TrieNode">
+    <Position X="1.25" Y="7.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataStructures\Trie\TrieNode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Block&lt;T&gt;" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="3.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>IAAACAACAAAAAACAQIAAAAAAAAAABEAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataStructures\Block.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.406" />
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.DynamicHashing&lt;T&gt;">
+    <Position X="6" Y="8.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAABQkAAAACAAAiAgAAAAAACAAEQAAAAAAAAADAAAAA=</HashCode>
+      <FileName>DataStructures\DynamicHashing.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="trie" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.Hashing&lt;T&gt;">
+    <Position X="7.25" Y="3.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>gYAAAEACEAAAEIgiAAAAAAACAQEIACAAAQAAACAAAAA=</HashCode>
+      <FileName>DataStructures\Hashing.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.DataStructures.StaticHashing&lt;T&gt;">
+    <Position X="8.75" Y="8.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAkAAAAAAAACAAEAAAAAAAQBAAAAAAA=</HashCode>
+      <FileName>DataStructures\StaticHashing.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Service.DataGenerator">
+    <Position X="16.5" Y="2" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAQAYQAAAAAQCAAAAAAAEABAAAAAAA=</HashCode>
+      <FileName>Service\DataGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Service.Test">
+    <Position X="12.75" Y="3.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>BAAAAJAgQAAAAAACAQAAAAAQAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>Service\Test.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="generator" />
+      <Field Name="hash" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Presenter.Presenter">
+    <Position X="19.5" Y="7" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAAAAAgAAAAAAABAAAIAEAAAAJCEUAggAAgAAA=</HashCode>
+      <FileName>Presenter\Presenter.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="healthCard" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Models.HealthCard">
+    <Position X="16" Y="7" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>oAAAAIAAAAAIAAAAAAAAAAAAAEAAAEBSFQAYAAAAAAA=</HashCode>
+      <FileName>Models\HealthCard.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Patients" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Models.Hospitalization">
+    <Position X="15.75" Y="12.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>QAACAAAAAAAAgBBEACAAAAAAAAAAAAAAAAAAAAAASAA=</HashCode>
+      <FileName>Models\Hospitalization.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AUS2_MichalMurin_HashFile.Models.Patient" BaseTypeListCollapsed="true">
+    <Position X="12" Y="8.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>IgIACAQAAAAAIkDACIQAAAQAAACAAAACAAAYiAIACAA=</HashCode>
+      <FileName>Models\Patient.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Hospitalizations" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="AUS2_MichalMurin_HashFile.DataStructures.IData&lt;T&gt;" Collapsed="true">
+    <Position X="10.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAACAAAAAAAAAAAAAACAAAAAAAACAA=</HashCode>
+      <FileName>DataStructures\IData.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="AUS2_MichalMurin_HashFile.DataStructures.IRecord&lt;T&gt;" Collapsed="true">
+    <Position X="10.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAACAAIAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataStructures\IRecord.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="AUS2_MichalMurin_HashFile.Service.Direction">
+    <Position X="5.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACACAAAAAAAA=</HashCode>
+      <FileName>Service\Direction.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="AUS2_MichalMurin_HashFile.Service.HashType">
+    <Position X="7" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Service\HashType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
