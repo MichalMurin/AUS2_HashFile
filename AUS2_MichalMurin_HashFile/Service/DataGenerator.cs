@@ -42,7 +42,7 @@ namespace AUS2_MichalMurin_HashFile.Service
                 if (i == numberOfHospitalizations - 1)
                     end = DateTime.MaxValue; // poslednej hospitalizacii nastavime ze je este aktualna
                 patient.Hospitalizations[i] = new Hospitalization(diagnosis, start, end);
-                patient.Hospitalizations[i].Id = i+1;
+                patient.Hospitalizations[i]!.Id = i+1;
             }
             return patient;
         }

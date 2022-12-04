@@ -57,7 +57,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             Name = "";
             Surename = "";
             BirthNum = birthNum;
-            BirthDate = DateTime.Now;
+            BirthDate = GetBirthDate(birthNum);
             HelathInsuranceCode = 0;
         }
         public Patient(string name, string surename, string birthnum, byte insuranceCompanyCode)
@@ -81,8 +81,30 @@ namespace AUS2_MichalMurin_HashFile.Models
                 _actualLengthOfname = Name.Length;
                 _actualLengthOfsurename = Surename.Length;
                 _actualLengthOfbirthnumber = BirthNum.Length;
-                BirthDate = DateTime.Now;
+                BirthDate = GetBirthDate(birthnum);
             }
+        }
+
+        private DateTime GetBirthDate(string birthnum)
+        {
+            if(birthnum.Length > 6)
+            {
+                string yearstr = birthnum.Substring(0, 2);
+                string monthstr = birthnum.Substring(2, 2);
+                string daystr = birthnum.Substring(4, 2);
+                int year, month, day;
+                int.TryParse(yearstr, out year);
+                int.TryParse(monthstr, out month);
+                int.TryParse(daystr, out day);
+                year += 2000;
+                if (year > DateTime.Now.Year)
+                    year -= 100; 
+                if(month > 50)
+                    month -= 50;
+                if(day > 0 && day <=31 && month > 0  && month <= 12 && year > 0)
+                    return new DateTime(year, month, day);
+            }
+            return DateTime.MinValue;
         }
 
         public BitArray GetHash()
@@ -118,7 +140,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                     writer.Write(BirthNum + string.Concat(Enumerable.Repeat("0", MAX_BIRTHNUM_LENGHT - BirthNum.Length)));
                     foreach (var hosp in Hospitalizations)
                     {
-                        writer.Write(hosp.Id);
+                        writer.Write(hosp!.Id);
                         writer.Write(hosp.startDate.Ticks);
                         writer.Write(hosp.endDate.Ticks);
                         writer.Write(hosp.ActualDiagnosisLength);
@@ -145,20 +167,12 @@ namespace AUS2_MichalMurin_HashFile.Models
                     this.BirthNum = reader.ReadString().Substring(0, _actualLengthOfbirthnumber);
                     for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
                     {
-                        Hospitalizations[i].Id = reader.ReadInt32();
-                        Hospitalizations[i].startDate = new DateTime(reader.ReadInt64());
-                        Hospitalizations[i].endDate = new DateTime(reader.ReadInt64());
-                        Hospitalizations[i].ActualDiagnosisLength = reader.ReadInt32();
-                        Hospitalizations[i].Diagnosis = reader.ReadString().Substring(0, Hospitalizations[i].ActualDiagnosisLength);
-                    }
-                    //foreach (var hosp in this.Hospitalizations)
-                    //{
-                    //    hosp.Id = reader.ReadInt32();
-                    //    hosp.startDate = new DateTime(reader.ReadInt64());
-                    //    hosp.endDate = new DateTime(reader.ReadInt64());
-                    //    hosp.ActualDiagnosisLength = reader.ReadInt32();
-                    //    hosp.Diagnosis = reader.ReadString().Substring(0, hosp.ActualDiagnosisLength);
-                    //}
+                        Hospitalizations[i]!.Id = reader.ReadInt32();
+                        Hospitalizations[i]!.startDate = new DateTime(reader.ReadInt64());
+                        Hospitalizations[i]!.endDate = new DateTime(reader.ReadInt64());
+                        Hospitalizations[i]!.ActualDiagnosisLength = reader.ReadInt32();
+                        Hospitalizations[i]!.Diagnosis = reader.ReadString().Substring(0, Hospitalizations[i]!.ActualDiagnosisLength);
+                    }                    
                 }
             }
         }
@@ -170,27 +184,24 @@ namespace AUS2_MichalMurin_HashFile.Models
                 + sizeof(int) * 3 + sizeof(byte) + sizeof(long) + MAX_NUMBER_OF_HOSPITALIZATION * Hospitalization.Size; 
         }
 
-        public override string ToString()
+        public List<string> GetStrings()
         {
-            string result = $"Pacient {Name} {Surename}, rodne cislo: {BirthNum},narodeny: {BirthDate} poistovna: {HelathInsuranceCode} , Hospitalizacie:\n";
+            List<string> result = new List<string>();
+            result.Add($"Pacient {Name} {Surename}, rodne cislo: {BirthNum},narodeny: {BirthDate.ToString("dd.MM.yyyy")} poistovna: {HelathInsuranceCode}");
+            result.Add(" Hospitalizacie:");
             foreach (var hosp in Hospitalizations)
             {
-                if(hosp.Id != 0)
-                    result += hosp.ToString() + "\n\t";
+                if (hosp!.Id != 0)
+                    result.AddRange(hosp.GetStrings());
             }
             return result;
-        }
-
-        public string getFileRepresentation()
-        {
-            return $"{Name};{Surename};{BirthNum}";
         }
 
         public Hospitalization? GetHospitalizationById(int id)
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id == id)
+                if (Hospitalizations[i]!.Id == id)
                     return Hospitalizations[i];
             }
             return null;
@@ -198,9 +209,11 @@ namespace AUS2_MichalMurin_HashFile.Models
 
         public bool TryToAddHospitalization(Hospitalization hosp)
         {
+            if (IsActuallyHospitalized())
+                return false;
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id == 0)
+                if (Hospitalizations[i]!.Id == 0)
                 {
                     hosp.Id = i+1;
                     Hospitalizations[i] = hosp;
@@ -210,13 +223,24 @@ namespace AUS2_MichalMurin_HashFile.Models
             return false;
         }
 
+        public bool IsActuallyHospitalized()
+        {
+            for (int i = 0; i < Hospitalizations.Length; i++)
+            {
+                if (Hospitalizations[i]!.Id != 0 && Hospitalizations[i]!.endDate == DateTime.MaxValue)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public bool TryToEndHospitalization(DateTime end)
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id != 0 && Hospitalizations[i].endDate == DateTime.MaxValue)
+                if (Hospitalizations[i]!.Id != 0 && Hospitalizations[i]!.endDate == DateTime.MaxValue)
                 {
-                    Hospitalizations[i].endDate = end;
+                    Hospitalizations[i]!.endDate = end;
                     return true;          
                 }
             }
@@ -227,9 +251,9 @@ namespace AUS2_MichalMurin_HashFile.Models
         {
             for (int i = 0; i < Hospitalizations.Length; i++)
             {
-                if (Hospitalizations[i].Id == id)
+                if (Hospitalizations[i]!.Id == id)
                 {
-                    Hospitalizations[i].Id = 0;
+                    Hospitalizations[i]!.Id = 0;
                     return true;
                 }
             }

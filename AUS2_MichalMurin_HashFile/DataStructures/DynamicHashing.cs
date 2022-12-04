@@ -27,6 +27,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             EmptyBlocksOffsetes = new List<long>();
         }
 
+        public DynamicHashing(Trie.Trie trie, List<long> emptyBlocksOffsetes, string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
+        {
+            this.trie = trie;
+            EmptyBlocksOffsetes = emptyBlocksOffsetes;
+        }
 
         protected override long GetOffset(BitArray hash)
         {
@@ -47,7 +52,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             if (result.Item1)
             {
                 var exNode = result.Item2;
-                if (exNode.Offset == -1)
+                if (exNode!.Offset == -1)
                 {
                     AsignOffsetToNode(exNode);
                 }
@@ -62,7 +67,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     var foundBlcokData = FindBlock(data);
                     var block = foundBlcokData.Item1;
                     var offset = foundBlcokData.Item2;
-                    bool success = block.InsertRecord(data);
+                    bool success = block!.InsertRecord(data);
                     if (success)
                     {
                         TryWriteBlockToFile(offset, block);
@@ -231,8 +236,8 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             var FullBlock = TryReadBlockFromFile(exNodeToSplit.Offset);
             long freeOffset = exNodeToSplit.Offset;
             InternNode inNode;
-            ExternNode leftNode = null;
-            ExternNode rightNode = null;
+            ExternNode? leftNode = null;
+            ExternNode? rightNode = null;
             BitArray hash;
             bool newDataRight = false;
             // umelo navysime recordsCount .. ako keby sa tam pridal uz prvok ktroy sa tam nezmesti, aby nam aspon raz prebehol cyklus
@@ -334,24 +339,24 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
-                leftNode.Offset = freeOffset;
+                leftNode!.Offset = freeOffset;
                 TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                AsignOffsetToNode(rightNode);
+                AsignOffsetToNode(rightNode!);
                 NewRightBlock.InsertRecord(data);
-                TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
+                TryWriteBlockToFile(rightNode!.Offset, NewRightBlock);
                 return true;
             }
             else
             {
                 // lavy blok zapiseme naspat do suboru a pravy blok vratime aby sa do neho insertli nove data
                 // RecordsCount by uz ma byt spravne nastaveny z cyklu
-                rightNode.Offset = freeOffset;
+                rightNode!.Offset = freeOffset;
                 TryWriteBlockToFile(rightNode.Offset, NewRightBlock);
                 // Nastavit adresu podla volneho bloku v manazmente volnych blokov
-                AsignOffsetToNode(leftNode);
+                AsignOffsetToNode(leftNode!);
                 NewLeftBlock.InsertRecord(data);
-                TryWriteBlockToFile(leftNode.Offset, NewLeftBlock);
+                TryWriteBlockToFile(leftNode!.Offset, NewLeftBlock);
                 return true;
             }
         }
@@ -367,7 +372,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             File.WriteAllLines(_pathForEmptyBlocksData, offsetsString);
         }
 
-        public static (Trie.Trie, List<long>) LoadAppDataFromFile()
+        public static (Trie.Trie, List<long>) LoadDynamicDataFromFile()
         {
             var itemsForTrie = Trie.Trie.GetLeafesFromFile(_pathForTrieData);
             var trie = new Trie.Trie(itemsForTrie);

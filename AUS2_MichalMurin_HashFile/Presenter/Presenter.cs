@@ -22,6 +22,29 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             healthCard = new HealthCard(type, blockFactor, blockCount);
         }
 
+        public Presenter()
+        {
+        }
+
+        public bool TryToInitializeFromFile()
+        {
+            var result = HealthCard.FindConfigFiles();
+            if (result.Item1)
+            {
+                healthCard = new HealthCard((HashType)result.Item2!);
+                return true;
+            }
+            return false;
+        }
+
+        public void InitializeHealthCard(HashType type, int blockFactor, int blockCount = -1)
+        {
+            if (healthCard == null)
+            {
+                healthCard = new HealthCard(type, blockFactor, blockCount);
+            }
+        }
+
         /// <summary>
         /// metoda na generovanie dat
         /// </summary>
@@ -34,7 +57,7 @@ namespace AUS2_MichalMurin_HashFile.Presenter
         }
 
         
-        public (bool, string?) GetPatientData(string birthNum)
+        public (bool, List<string>?) GetPatientData(string birthNum)
         {
             return healthCard.GetPatientsData(birthNum);
         }
@@ -82,7 +105,7 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             return healthCard.deleteHospitalization(birthNum, idHosp);
         }
 
-        public (bool, string?) getHospitalization(string birthNum, int idHosp)
+        public (bool, List<string>?) getHospitalization(string birthNum, int idHosp)
         {
             return healthCard.getHospitalization(birthNum, idHosp);
         }
@@ -97,9 +120,19 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             return healthCard.SequencePrint();
         }
 
-        public bool ArePresentAppConfigFiles()
+        //public bool ArePresentAppConfigFiles()
+        //{
+        //    return HealthCard.FindConfigFiles();
+        //}
+
+        public void DeleteAllFiles()
         {
-            return healthCard.FindConfigFiles();
+            healthCard.DeleteData();
+        }
+
+        public void SaveAllData()
+        {
+            healthCard.Save();
         }
     }
 }

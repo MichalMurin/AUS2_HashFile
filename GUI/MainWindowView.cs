@@ -12,7 +12,8 @@ namespace GUI
         public MainWindowView(Presenter pPresenter)
         {
             InitializeComponent();
-            presenter = pPresenter;
+            presenter = pPresenter; 
+            this.FormClosed += ClosedHandler;
         }
 
         private void GenerateBtn_Click(object sender, EventArgs e)
@@ -103,6 +104,24 @@ namespace GUI
             var result = presenter.GetSequenceData();
             Form dialog = new ShowTextView(result);
             dialog.ShowDialog();            
+        }
+
+        protected void ClosedHandler(object sender, EventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("Prajete si vymazat subor?",
+                      "ZATVORIT", MessageBoxButtons.YesNo);
+            switch (dr)
+            {
+                case DialogResult.Yes:
+                    presenter.DeleteAllFiles();
+                    break;
+                case DialogResult.No:
+                    presenter.SaveAllData();
+                    break;
+                default:
+                    presenter.SaveAllData();
+                    break;
+            }
         }
     }
 }

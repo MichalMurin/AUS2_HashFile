@@ -12,5 +12,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
         public BitArray GetHash();
         public bool MyEquals(T data);
         public T CreateClass();
+
+        public List<string> GetStrings();
     }
 }

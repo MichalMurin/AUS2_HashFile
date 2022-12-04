@@ -17,13 +17,13 @@ namespace AUS2_MichalMurin_HashFile.Service
         private DataGenerator generator = new DataGenerator();
         private Random rand = new Random();
         private HashSet<string> setOfBirthNums = new HashSet<string>();
-        public Test(int blockFactor, HashType type, int blockCount)
+        public Test(int blockFactor, HashType type, int blockCount = 0)
         {
             if (File.Exists(@"TESTING"))
             {
                 File.Delete(@"TESTING");
             }
-            if (type == HashType.StaticHash)
+            if (type == HashType.StaticHash && blockCount > 0)
                 hash = new StaticHashing<Patient>("TESTING", blockFactor, blockCount);
             else if (type == HashType.DynamicHash)
                 hash = new DynamicHashing<Patient>("TESTING", blockFactor);
@@ -268,6 +268,7 @@ namespace AUS2_MichalMurin_HashFile.Service
             Console.WriteLine("Priemerny cas pre find: " + stopwatchFind.ElapsedMilliseconds / (double)numberOfFind + " ms");
             Console.WriteLine("Priemerny cas pre delete: " + stopwatchDelete.ElapsedMilliseconds / (double)numberOfDelete + " ms");
             Console.ResetColor();
+            hash.DisposeAndCloseFile();
             return true;
         }
     }

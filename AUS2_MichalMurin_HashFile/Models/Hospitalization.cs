@@ -47,7 +47,15 @@ namespace AUS2_MichalMurin_HashFile.Models
 
         public override string ToString()
         {
-            return $"\tID: {Id}, zaciatok: {startDate.ToString("dd.MM.yyyy")}, koniec: {endDate.ToString("dd.MM.yyyy")} \n\t\t diagnoza: {Diagnosis}";
+            return $"\tID: {Id}, zaciatok: {startDate.ToString("dd.MM.yyyy")}, koniec: {endDate.ToString("dd.MM.yyyy")} \t diagnoza: {Diagnosis}";
+        }
+
+        public List<string> GetStrings()
+        {
+            List<string> result = new List<string>();
+            result.Add($"\tID: {Id}, zaciatok: {startDate.ToString("dd.MM.yyyy")}, koniec: {endDate.ToString("dd.MM.yyyy")}");
+            result.Add($"\t\tdiagnoza: {Diagnosis}");
+            return result;
         }
     }
 }

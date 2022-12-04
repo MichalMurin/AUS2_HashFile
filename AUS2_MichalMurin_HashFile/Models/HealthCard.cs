@@ -12,33 +12,39 @@ namespace AUS2_MichalMurin_HashFile.Models
     internal class HealthCard
     {
         public Hashing<Patient> Patients { get; set; }
-        private string _dataFilePath = "HASH";
+        private static string _dataFilePath = "PATIENTS";
 
-        public HealthCard(HashType type, int blockFactor, int blockCount=-1)
+        internal HealthCard(HashType type, int blockFactor, int blockCount=-1)
         {
+            DeleteData();
             if (type == HashType.StaticHash)
             {
-                if (File.Exists(StaticHashing<Patient>._pathForStaticFileData))
-                {
-                    // load data a vytvroenie HashFile
-                }
-                else
-                {
-                    Patients = new StaticHashing<Patient>(_dataFilePath, blockFactor, blockCount);
-                }
+                Patients = new StaticHashing<Patient>(_dataFilePath, blockFactor, blockCount);
             }
             else
             {
-                if (File.Exists(DynamicHashing<Patient>._pathForTrieData) && File.Exists(DynamicHashing<Patient>._pathForEmptyBlocksData))
-                {
-                    // load data a vytvroenie HashFile
-                }
-                else
-                {
-                    Patients = new DynamicHashing<Patient>(_dataFilePath, blockFactor);
-                }
+                 Patients = new DynamicHashing<Patient>(_dataFilePath, blockFactor);
             }
         }
+
+        // Konstruktor ktory nataha data zo suboru
+        // Na vykonanie tohto konstruktora sa dostaneme vzdy ked vieme, ze config subory naozaj existuju
+        internal HealthCard(HashType type)
+        {
+            var baseData = Hashing<Patient>.LoadBaseDataFromFile();
+            if (type == HashType.StaticHash)
+            {
+                var blockCount = StaticHashing<Patient>.LoadStaticDataFromFile();
+                Patients = new StaticHashing<Patient>(baseData.Item2, baseData.Item1, blockCount);
+            }
+            else
+            {
+                var dynamicData = DynamicHashing<Patient>.LoadDynamicDataFromFile();
+                Patients = new DynamicHashing<Patient>(dynamicData.Item1, dynamicData.Item2, baseData.Item2, baseData.Item1);
+            }
+        }
+
+
 
         /// <summary>
         /// metoda na generovanie nahodnych dat
@@ -68,11 +74,11 @@ namespace AUS2_MichalMurin_HashFile.Models
         /// </summary>
         /// <param name="birthNum">rodne cislo</param>
         /// <returns>data</returns>
-        internal (bool, string?) GetPatientsData(string birthNum)
+        internal (bool, List<string>?) GetPatientsData(string birthNum)
         {
             var patient = Patients.Find(new Patient(birthNum));
             if (patient != null)
-                return (true, patient.ToString());
+                return (true, patient.GetStrings());
             else
                 return (false, null);
         }
@@ -86,7 +92,7 @@ namespace AUS2_MichalMurin_HashFile.Models
         /// <param name="patientStr">string pacienta</param>
         /// <param name="hospitalName">nazov nemocnice</param>
         /// <returns>zoznam hospitalizacii pacienta</returns>
-        internal (bool, string?) getHospitalization(string birthNum, int id)
+        internal (bool, List<string>?) getHospitalization(string birthNum, int id)
         {
             var patient = Patients.Find(new Patient(birthNum));
             if (patient != null)
@@ -95,7 +101,7 @@ namespace AUS2_MichalMurin_HashFile.Models
                 if (hosp == null)
                     return (false, null);
                 else
-                    return (true, hosp.ToString());
+                    return (true, hosp.GetStrings());
             }
             else
                 return (false, null);
@@ -198,9 +204,52 @@ namespace AUS2_MichalMurin_HashFile.Models
             return Patients.GetSequenceOfBlocks();
         }
 
-        public bool FindConfigFiles()
+        public static (bool, HashType?) FindConfigFiles()
         {
-            throw new NotImplementedException();
+            if (File.Exists(_dataFilePath) && File.Exists(Hashing<Patient>._pathToBaseData))
+            {
+                if (File.Exists(DynamicHashing<Patient>._pathForTrieData) && File.Exists(DynamicHashing<Patient>._pathForEmptyBlocksData))
+                {
+                    return (true, HashType.DynamicHash);
+                }
+                if (File.Exists(StaticHashing<Patient>._pathForStaticFileData))
+                {
+                    return (true, HashType.StaticHash);
+                }
+            }
+            return (false, null);
+        }
+
+        public void DeleteData()
+        {
+            if(Patients != null)
+                Patients.DisposeAndCloseFile(); 
+            if (File.Exists(_dataFilePath))
+            {
+                File.Delete(_dataFilePath);
+            }
+            if (File.Exists(DynamicHashing<Patient>._pathForTrieData))
+            {
+                File.Delete(DynamicHashing<Patient>._pathForTrieData);
+            }
+            if (File.Exists(DynamicHashing<Patient>._pathForEmptyBlocksData))
+            {
+                File.Delete(DynamicHashing<Patient>._pathForEmptyBlocksData);
+            }
+            if (File.Exists(StaticHashing<Patient>._pathForStaticFileData))
+            {
+                File.Delete(StaticHashing<Patient>._pathForStaticFileData);
+            }
+            if (File.Exists(Hashing<Patient>._pathToBaseData))
+            {
+                File.Delete(Hashing<Patient>._pathToBaseData);
+            }
+        }
+
+        public void Save()
+        {
+            Patients.SaveBaseDataToFile();
+            Patients.ExportAppDataToFile();
         }
     }
 }

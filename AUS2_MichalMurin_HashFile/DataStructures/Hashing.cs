@@ -117,9 +117,9 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
        public abstract void ExportAppDataToFile();
 
-       public void SaveBaseDataToFile(string path)
+       public void SaveBaseDataToFile()
         {
-            File.WriteAllText(path, $"{BlockFactor};{HashFile.Name}");
+            File.WriteAllText(_pathToBaseData, $"{BlockFactor};{HashFile.Name}");
         }
 
         // vraciam blok faktor a cestu k suboru
@@ -165,8 +165,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             HashFile.Seek(0, SeekOrigin.Begin);
             Block<T> block = new Block<T>(BlockFactor);
             long blockCount = HashFile.Length / block.GetSize();
+            int valids = 0;
             for (long i = 0; i < blockCount; i++)
             {
+                result.Add("========================================================================");
                 result.Add($"ADRESA: {HashFile.Position}");
                 byte[] blockBytes = new byte[block.GetSize()];
                 try
@@ -181,15 +183,18 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 result.Add($"Blok cislo {i}: Valid count = {block.ValidCount}");
                 foreach (var rec in block.Records)
                 {
-                    result.Add($"\t{rec.ToString()}");
+                    result.AddRange(rec.GetStrings());
                 }
+                valids += block.ValidCount;
             }
+            result.Insert(0, $"Pocet Validnych dat = {valids}");
             return result;
         }
 
-        public void DisposeFile()
+        public void DisposeAndCloseFile()
         {
             HashFile.Dispose();
+            HashFile.Close();
         }
     }
 }

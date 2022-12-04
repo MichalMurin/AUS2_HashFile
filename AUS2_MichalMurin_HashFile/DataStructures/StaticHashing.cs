@@ -33,7 +33,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             var result = FindBlock(data);
             var block = result.Item1;
             var offset = result.Item2;
-            bool success = block.InsertRecord(data);
+            bool success = block!.InsertRecord(data);
             if (success)
             {
                 TryWriteBlockToFile(offset, block);
@@ -47,27 +47,25 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             var result = FindBlock(data);
             var block = result.Item1;
             var offset = result.Item2;
-            bool success = block.RemoveRecord(data);
+            bool success = block!.RemoveRecord(data);
             if (success)
             {
                 TryWriteBlockToFile(offset, block);
             }
             return success;
         }
-
-        //
-        public static (int, string) LoadBaseDataFromFile(string path)
+        
+        public static int LoadStaticDataFromFile()
         {
-            string line = File.ReadAllText(path);
-            var results = line.Split(";");
-            int BlFactor;
-            int.TryParse(results[0], out BlFactor);
-            return (BlFactor, results[1]);
+            string line = File.ReadAllText(_pathForStaticFileData);
+            int BlockCount;
+            int.TryParse(line, out BlockCount);
+            return BlockCount;
         }
 
         public override void ExportAppDataToFile()
         {
-            File.WriteAllText(_pathForStaticFileData, $"{BlockFactor};{HashFile.Name}");
+            File.WriteAllText(_pathForStaticFileData, $"{TotalBlockCount}");
         }
     }
 }

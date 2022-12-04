@@ -16,12 +16,14 @@ namespace GUI
         public Presenter? presenter { get; set; }
         public InitialForm()
         {
-            InitializeComponent();
+            InitializeComponent(); 
+            presenter = new Presenter();
+            if (presenter.TryToInitializeFromFile())
+                RunMain();
         }
 
         private void runBtn_Click(object sender, EventArgs e)
         {
-            // TODO skontrolovat ci niesu ulozenen app data
             if (staticCheckBox.Checked)
             {
                 presenter = new Presenter(AUS2_MichalMurin_HashFile.Service.HashType.StaticHash, (int)BlockFaktorNum.Value, (int)BlockCountNum.Value);
@@ -30,10 +32,16 @@ namespace GUI
             {
                 presenter = new Presenter(AUS2_MichalMurin_HashFile.Service.HashType.DynamicHash, (int)BlockFaktorNum.Value);
             }
+            RunMain();
+        }
+
+        private void RunMain()
+        {
             var main = new MainWindowView(presenter!);
             Hide();
             main.ShowDialog();
             Close();
+            Dispose();
         }
 
         private void staticCheckBox_CheckedChanged(object sender, EventArgs e)

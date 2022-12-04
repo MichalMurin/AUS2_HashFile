@@ -231,9 +231,19 @@
             0,
             0,
             0});
+            this.Uloha2ID.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.Uloha2ID.Name = "Uloha2ID";
             this.Uloha2ID.Size = new System.Drawing.Size(120, 23);
             this.Uloha2ID.TabIndex = 8;
+            this.Uloha2ID.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // label2
             // 
