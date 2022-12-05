@@ -18,7 +18,7 @@ namespace AUS2_MichalMurin_HashFile.Service
         private Random rand = new Random();
         private HashSet<string> setOfBirthNums = new HashSet<string>();
         internal Test(int blockFactor, HashType type, int blockCount = 0)
-        {
+        {            
             if (File.Exists(@"TESTING"))
             {
                 File.Delete(@"TESTING");
@@ -42,14 +42,16 @@ namespace AUS2_MichalMurin_HashFile.Service
             }
         }
 
-        private List<Patient> FillListFromTestFile(int size)
+        private List<Patient> FillListFromTestFile(string path)
         {
-            var listofPatients = new List<Patient>(size);
-            var tmp = File.ReadAllLines("patients.csv");
+            var listofPatients = new List<Patient>();
+            var tmp = File.ReadAllLines(path);
             for (int i = 0; i < tmp.Length; i++)
             {
                 var items = tmp[i].Split(";");
-                listofPatients.Add(new Patient(items[0], items[1], items[2],  1));
+                byte insurance;
+                byte.TryParse(items[3], out insurance);
+                listofPatients.Add(new Patient(items[0], items[1], items[2],  insurance));
             }
             return listofPatients;
         }
@@ -104,20 +106,6 @@ namespace AUS2_MichalMurin_HashFile.Service
             Stopwatch stopwatchInsert = new Stopwatch();
             Stopwatch stopwatchFind = new Stopwatch();
             Stopwatch stopwatchDelete = new Stopwatch();
-
-            //var listofPatients = FillListFromTestFile(initialSize);
-            //for (int i = 0; i < initialSize; i++)
-            //{
-            //    var patient = listofPatients[i];
-            //    bool success = hash.Insert(patient);
-            //    Patient? patient2 = hash.Find(patient);
-            //    if (!success || patient2 == null || patient2.BirthNum != patient.BirthNum)
-            //    {
-            //        Console.ForegroundColor = ConsoleColor.Red;
-            //        Console.WriteLine("Nepodarilo sa pridat prvok - TEST ZLYHAL - Insert()");
-            //        Console.ResetColor();
-            //    }
-            //}
             var listofPatients = new List<Patient>(initialSize);
             Console.WriteLine("Zacinam naplnovat subor nahodnymi datami");
             while (listofPatients.Count != initialSize)
@@ -156,22 +144,6 @@ namespace AUS2_MichalMurin_HashFile.Service
             int rndIndex = 0;
 
             Console.WriteLine("Subor je naplneny na inicializacnu velkost, zacinam testovat operacie");
-            //for (int i = 0; i < 100000; i++)
-            //{
-            //    rndIndex = rand.Next(0, listofPatients.Count);
-            //    var dataToFind = listofPatients[rndIndex];
-            //    stopwatchFind.Start();
-            //    var item = hash.Find(dataToFind);
-            //    stopwatchFind.Stop();
-            //    numberOfFind++;
-            //    if (item == null || item.BirthNum != dataToFind.BirthNum)
-            //    {
-            //        Console.ForegroundColor = ConsoleColor.Red;
-            //        Console.WriteLine("Nepodarilo sa najst prvok - TEST ZLYHAL - Find()");
-            //        Console.ResetColor();
-            //        return false;
-            //    }
-            //}
 
             for (int i = 0; i < numberOfOperations; i++)
             {
@@ -270,6 +242,124 @@ namespace AUS2_MichalMurin_HashFile.Service
             Console.ResetColor();
             hash.DisposeAndCloseFile();
             return true;
+        }
+
+
+
+        public void GeneratePatientsInFile(int num, string path)
+        {
+            var patients = new List<string>(num);
+            Patient pat;
+            while (patients.Count != num)
+            {
+                pat = GetPatient();
+                patients.Add($"{pat.Name};{pat.Surename};{pat.BirthNum};{pat.HelathInsuranceCode}");
+            }
+            File.WriteAllLines(path, patients);
+        }
+
+
+
+        public void GenerateStatistics(int numberOfOperations)
+        {
+            var patientsNotInFile = FillListFromTestFile("patients.csv");
+
+            var filename = hash.GetType() == typeof(StaticHashing<Patient>) ? "STATICKY.csv" : "DYNAMICKY.csv";
+            Stopwatch stopwatch = new Stopwatch();
+
+            List<Patient> patientsInFile = new List<Patient>();
+            List<string> insertData = new List<string>();
+            List<string> findData = new List<string>();
+            List<string> deletetData = new List<string>();
+            bool success = false;
+            for (int i = 0; i < patientsNotInFile.Count/5; i++)
+            {
+                var patient = patientsNotInFile[patientsNotInFile.Count-1];
+                stopwatch.Start();
+                success = hash.Insert(patient);
+                stopwatch.Stop();
+                insertData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                stopwatch.Reset();
+                if(success)
+                {
+                    patientsInFile.Add(patient);
+                    patientsNotInFile.RemoveAt(patientsNotInFile.Count - 1);
+                }
+                stopwatch.Start();
+                Patient? patient2 = hash.Find(patient);
+                stopwatch.Stop();
+                findData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                stopwatch.Reset();
+            }
+            Patient data;
+            int operationNumber = 0;
+            int rndIndex = 0;
+
+            for (int i = 0; i < numberOfOperations; i++)
+            {
+                // 0=insert 1=find 2=delete
+                operationNumber = rand.Next(0, 3);
+                if (operationNumber == 0)
+                {
+                    data = patientsNotInFile[patientsNotInFile.Count - 1];
+                    stopwatch.Start();
+                    success = hash.Insert(data);
+                    stopwatch.Stop();
+                    insertData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                    stopwatch.Reset();
+                    if (success)
+                    {
+                        patientsInFile.Add(data);
+                        patientsNotInFile.RemoveAt(patientsNotInFile.Count - 1);
+                    }
+                    
+                }
+                else if (operationNumber == 1)
+                {
+                    rndIndex = rand.Next(0, patientsInFile.Count);
+                    var dataToFind = patientsInFile[rndIndex];
+                    stopwatch.Start();
+                    Patient? patient2 = hash.Find(dataToFind);
+                    stopwatch.Stop();
+                    findData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                    stopwatch.Reset();
+                }
+                else if (operationNumber == 2)
+                {
+                    rndIndex = rand.Next(0, patientsInFile.Count);
+                    if (patientsInFile.Count == 0)
+                    {
+                        data = patientsNotInFile[patientsNotInFile.Count - 1];
+                        stopwatch.Start();
+                        success = hash.Insert(data);
+                        stopwatch.Stop();
+                        insertData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                        stopwatch.Reset();
+                        if (success)
+                        {
+                            patientsInFile.Add(data);
+                            patientsNotInFile.RemoveAt(patientsNotInFile.Count - 1);
+                        }
+                    }
+                    var dataToDelete = patientsInFile[rndIndex];
+                    stopwatch.Start();
+                    success = hash.Delete(dataToDelete);
+                    stopwatch.Stop();
+                    deletetData.Add($"{stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))};{hash.HashFile.Length};{patientsInFile.Count}");
+                    stopwatch.Reset();
+                    if (success)
+                    {
+                        patientsInFile.RemoveAt(rndIndex);
+                        patientsNotInFile.Add(dataToDelete);
+                    }
+                }
+            }
+
+            File.WriteAllLines($"{hash.BlockFactor}insert_{filename}", insertData);
+            File.WriteAllLines($"{hash.BlockFactor}find_{filename}", findData);
+            File.WriteAllLines($"{hash.BlockFactor}delete_{filename}", deletetData);
+
+            hash.DisposeAndCloseFile();
         }
     }
 }

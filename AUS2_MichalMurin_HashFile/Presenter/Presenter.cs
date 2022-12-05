@@ -21,11 +21,17 @@ namespace AUS2_MichalMurin_HashFile.Presenter
         {
             healthCard = new HealthCard(type, blockFactor, blockCount);
         }
-
+        /// <summary>
+        /// Beyparametricky konstruktor
+        /// </summary>
         public Presenter()
         {
         }
 
+        /// <summary>
+        /// Metoda, ktora sa pokusi inicializvoat zdravotnu kartu zo suboru
+        /// </summary>
+        /// <returns></returns>
         public bool TryToInitializeFromFile()
         {
             var result = HealthCard.FindConfigFiles();
@@ -36,7 +42,12 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             }
             return false;
         }
-
+        /// <summary>
+        /// Metoda ktora incializuje zdravotnu kartu na zaklade vstupnych parametrov
+        /// </summary>
+        /// <param name="type">typ hesovania</param>
+        /// <param name="blockFactor">blokovaci faktor</param>
+        /// <param name="blockCount">pocet blokov v subore</param>
         public void InitializeHealthCard(HashType type, int blockFactor, int blockCount = -1)
         {
             if (healthCard == null)
@@ -56,7 +67,11 @@ namespace AUS2_MichalMurin_HashFile.Presenter
             healthCard.generateRandomData(patientsNumber);
         }
 
-        
+        /// <summary>
+        /// Metoda na ziskanie dat pacienta
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <returns>zoznam retazcov reprezentujuce data pacienta</returns>
         public (bool, List<string>?) GetPatientData(string birthNum)
         {
             return healthCard.GetPatientsData(birthNum);
@@ -69,7 +84,7 @@ namespace AUS2_MichalMurin_HashFile.Presenter
         /// <param name="pSurname">priezvisko</param>
         /// <param name="pBirthNumber">rodne cislo</param>
         /// <param name="pPnsuranceCompany">poistovna</param>
-        /// <returns></returns>
+        /// <returns>true ak sa pridanie podarilo</returns>
         public bool addPatient(string pName, string pSurname, string pBirthNumber, byte pPnsuranceCompany)
         {
             return healthCard.addPatient(pName, pSurname, pBirthNumber, pPnsuranceCompany);
@@ -92,44 +107,59 @@ namespace AUS2_MichalMurin_HashFile.Presenter
         /// metoda na ukoncenie hospitalizacie
         /// </summary>
         /// <param name="patientStr">string pacienta</param>
-        /// <param name="hospitalName">nazov nemocnice</param>
         /// <param name="end">koniec hospitalizacie</param>
-        /// <returns></returns>
+        /// <returns>true ak sa pridanie podarilo</returns>
         public bool endHospitalization(string patientStr, DateTime end)
         {
             return healthCard.addEndOfHospitalization(patientStr, end);
         }
-
+        /// <summary>
+        /// Metoda na vymazanie hospitalizacie
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <param name="idHosp">id hospitalizacie</param>
+        /// <returns>true ak sa mazanie podarilo</returns>
         public bool deleteHospitalization(string birthNum, int idHosp)
         {
             return healthCard.deleteHospitalization(birthNum, idHosp);
         }
-
+        /// <summary>
+        /// Metoda na ziskanie konkretnej hospitalizacie
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <param name="idHosp">id hospitalizacie</param>
+        /// <returns></returns>
         public (bool, List<string>?) getHospitalization(string birthNum, int idHosp)
         {
             return healthCard.getHospitalization(birthNum, idHosp);
         }
-
+        /// <summary>
+        /// Metoda na vymazanie pacienta
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <returns>true ak sa mazanie podarilo</returns>
         public bool deletePatient(string birthNum)
         {
             return healthCard.deletePatient(birthNum);
         }
-
+        /// <summary>
+        /// Metoda na ziskanie sekvencneho vypisu suboru
+        /// </summary>
+        /// <returns>Skenvencny vypis</returns>
         public List<string> GetSequenceData()
         {
             return healthCard.SequencePrint();
         }
-
-        //public bool ArePresentAppConfigFiles()
-        //{
-        //    return HealthCard.FindConfigFiles();
-        //}
-
+        /// <summary>
+        /// Metoda na vymazanie vsetkych dat
+        /// </summary>
         public void DeleteAllFiles()
         {
             healthCard.DeleteData();
         }
-
+        /// <summary>
+        /// Metoda na ulozenie vsetkych dat
+        /// </summary>
         public void SaveAllData()
         {
             healthCard.Save();

@@ -14,6 +14,12 @@ namespace AUS2_MichalMurin_HashFile.Models
         internal Hashing<Patient> Patients { get; set; }
         private static string _dataFilePath = "PATIENTS";
 
+        /// <summary>
+        /// Konstruktor triedy
+        /// </summary>
+        /// <param name="type">typ hesovania</param>
+        /// <param name="blockFactor">blokovaci faktor</param>
+        /// <param name="blockCount">pocet blokov</param>
         internal HealthCard(HashType type, int blockFactor, int blockCount=-1)
         {
             DeleteData();
@@ -177,11 +183,22 @@ namespace AUS2_MichalMurin_HashFile.Models
             return Patients.Insert(patient);
         }
 
+        /// <summary>
+        /// Metoda na vymazanie pacienta
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <returns>true ak sa mazanie podarilo</returns>
         internal bool deletePatient(string birthNum)
         {
             return Patients.Delete(new Patient(birthNum));
         }
 
+        /// <summary>
+        /// Metoda na vymazanie hospitalizacie pacienta
+        /// </summary>
+        /// <param name="birthNum">rodne cislo</param>
+        /// <param name="idHosp">id hospitalizacie</param>
+        /// <returns>true ak sa vymazanie podarilo</returns>
         internal bool deleteHospitalization(string birthNum, int idHosp)
         {
             var patient = Patients.Find(new Patient(birthNum));
@@ -199,11 +216,18 @@ namespace AUS2_MichalMurin_HashFile.Models
                 return false;
         }
 
+        /// <summary>
+        /// metoda na sekvencne vypisanie dat
+        /// </summary>
+        /// <returns></returns>
         internal List<string> SequencePrint()
         {
             return Patients.GetSequenceOfBlocks();
         }
-
+        /// <summary>
+        /// Metoda na najdenie konfiguracnych suborovo
+        /// </summary>
+        /// <returns>true ak sa nasli + typ hesovania</returns>
         internal static (bool, HashType?) FindConfigFiles()
         {
             if (File.Exists(_dataFilePath) && File.Exists(Hashing<Patient>._pathToBaseData))
@@ -220,6 +244,9 @@ namespace AUS2_MichalMurin_HashFile.Models
             return (false, null);
         }
 
+        /// <summary>
+        /// Metoda na vymazanie vsetkych konfiguracnych dat
+        /// </summary>
         internal void DeleteData()
         {
             if(Patients != null)
@@ -245,7 +272,9 @@ namespace AUS2_MichalMurin_HashFile.Models
                 File.Delete(Hashing<Patient>._pathToBaseData);
             }
         }
-
+        /// <summary>
+        /// Metoda na ulozenie vsetkych dat
+        /// </summary>
         internal void Save()
         {
             Patients.SaveBaseDataToFile();

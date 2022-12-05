@@ -13,12 +13,19 @@ class Program
 {
     public static int Main()
     {
-        DataGenerator gen = new DataGenerator();
-
+        //test.GeneratePatientsInFile(1000000, "patients.csv");
         Test test = new Test(5, HashType.DynamicHash);
-         test.runTest(1000, 1000, 1, true);
-        Test test2 = new Test(5, HashType.StaticHash, 10000);
-        test2.runTest(1000, 1000, 1, true);
+        test.GenerateStatistics(100000);
+        //test.runTest(1000, 1000, 1, true);
+        Test test2 = new Test(5, HashType.StaticHash, 100000);
+        test2.GenerateStatistics(100000);
+        //test2.runTest(1000, 1000, 1, true);
+
+
+        Test test3 = new Test(100, HashType.DynamicHash);
+        test3.GenerateStatistics(100000);
+        Test test4 = new Test(100, HashType.StaticHash, 20000);
+        test4.GenerateStatistics(100000);
         return 0;
     }
 

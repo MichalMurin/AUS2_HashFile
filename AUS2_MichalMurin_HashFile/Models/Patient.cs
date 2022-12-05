@@ -26,7 +26,6 @@ namespace AUS2_MichalMurin_HashFile.Models
         internal DateTime BirthDate { get; set; }
         internal byte HelathInsuranceCode { get; set; }
         internal Hospitalization?[] Hospitalizations { get; set; }
-        //private int _actualNumberOfHospitalizations = 0;
         private int _actualLengthOfname;
         private int _actualLengthOfsurename;
         private int _actualLengthOfbirthnumber;
@@ -35,7 +34,6 @@ namespace AUS2_MichalMurin_HashFile.Models
         public Patient()
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-            //Array.Fill(Hospitalizations, new Hospitalization());
             for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
             {
                 Hospitalizations[i] = new Hospitalization();
@@ -49,7 +47,6 @@ namespace AUS2_MichalMurin_HashFile.Models
         internal Patient(string birthNum)
         {
             Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-            //Array.Fill(Hospitalizations, new Hospitalization());
             for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
             {
                 Hospitalizations[i] = new Hospitalization();
@@ -69,7 +66,6 @@ namespace AUS2_MichalMurin_HashFile.Models
             else
             {
                 Hospitalizations = new Hospitalization[MAX_NUMBER_OF_HOSPITALIZATION];
-                //Array.Fill(Hospitalizations, new Hospitalization());
                 for (int i = 0; i < MAX_NUMBER_OF_HOSPITALIZATION; i++)
                 {
                     Hospitalizations[i] = new Hospitalization();
@@ -122,8 +118,7 @@ namespace AUS2_MichalMurin_HashFile.Models
             return new Patient();
         }
 
-        // [<dlzka mena>, <dlzka priezviska>, <dlzka rod. cisla>, <pocet hospitalizacii>, <kod poistovne>, <datum narodenia - long ticks>, <meno>, <priezvisko>, <rod cislo>, ...HOSPITALIZACIE]
-        public byte[] ToByteArray()
+         public byte[] ToByteArray()
         {
             using (MemoryStream stream = new MemoryStream())
             {
@@ -132,7 +127,6 @@ namespace AUS2_MichalMurin_HashFile.Models
                     writer.Write(_actualLengthOfname);
                     writer.Write(_actualLengthOfsurename);
                     writer.Write(_actualLengthOfbirthnumber);
-                    //writer.Write(_actualNumberOfHospitalizations);
                     writer.Write(HelathInsuranceCode);
                     writer.Write(BirthDate.Ticks);
                     writer.Write(Name + string.Concat(Enumerable.Repeat("0", MAX_NAME_LENGHT - Name.Length)));
@@ -159,7 +153,6 @@ namespace AUS2_MichalMurin_HashFile.Models
                     this._actualLengthOfname = reader.ReadInt32();
                     this._actualLengthOfsurename = reader.ReadInt32();
                     this._actualLengthOfbirthnumber = reader.ReadInt32();
-                   // this._actualNumberOfHospitalizations = reader.ReadInt32();
                     this.HelathInsuranceCode = reader.ReadByte();
                     this.BirthDate = new DateTime(reader.ReadInt64());
                     this.Name = reader.ReadString().Substring(0, _actualLengthOfname);

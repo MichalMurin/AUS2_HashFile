@@ -32,15 +32,24 @@ namespace AUS2_MichalMurin_HashFile
             }
             ValidCount = 0;
         }
+
+        private bool CheckDuplicities(T pNew)
+        {
+            for (int i = 0; i < ValidCount; i++)
+            {
+                if (Records[i].MyEquals(pNew))
+                    return false;
+            }
+            return true;
+        }
         internal bool InsertRecord(T pNew)
         {
-            if(ValidCount < BlockFactor)
+            if(ValidCount < BlockFactor && CheckDuplicities(pNew))
             {
                 Records[ValidCount] = pNew;
                 ValidCount++;
                 return true;
             }
-            //throw new IndexOutOfRangeException("Too many record in the block!");
             return false;
         }
 

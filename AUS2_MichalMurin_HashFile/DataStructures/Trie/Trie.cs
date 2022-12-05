@@ -12,24 +12,13 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
 {
     internal class Trie
     {
-        //internal int BlockFactor { get;}
-        /// <summary>
-        /// Koren stromu
-        /// </summary>
-
-        // public int BlockSize { get;}
         internal InternNode? Root { get; private set; }
 
-        /// <summary>
-        /// Bezparametricky konstruktor
-        /// </summary>
         internal Trie()
         {
             Root = new InternNode();
             Root.LeftSon = new ExternNode(-1, 0, Root);
             Root.RightSon = new ExternNode(-1, 0, Root);
-           // BlockFactor = pBlockFactor;
-           // BlockSize = pBlockSize;
         }
         internal Trie(List<(ExternNode, BitArray)> listOfExternNodes)
         {
@@ -39,8 +28,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
             }
 
             Root = new InternNode();
-            //BlockFactor = pBlockFactor;
-            //BlockSize = pBlockSize;
             foreach (var item in listOfExternNodes)
             {
                 InternNode current = Root;
@@ -88,10 +75,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         }
 
         /// <summary>
-        /// Pomocna metoda na najdenie dat v BVS
+        /// Pomocna metoda na najdenie externeho vrcholu v trie
         /// </summary>
         /// <param name="pData">Hladane data</param>
-        /// <returns>(True, hladany vrchol, kolky bit sa pouziva) - ak je hladanie uspesne, inak (False, Vrchol kde hladanie skoncilo)</returns>
+        /// <returns>(True, hladany vrchol, kolky bit sa pouziva, pouzity bit) - ak je hladanie uspesne</returns>
         internal (bool, ExternNode?, int) FindExternNode(BitArray pData)
         {
             TrieNode? resultNode = Root;
@@ -154,13 +141,7 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
                     helperStack.Push((((InternNode)node).LeftSon!,newBits));
                 }
                 if (node.GetType() == typeof(ExternNode))
-                {
-                    //if (((ExternNode)node).IsLeftSon())
-                    //    newBits.Set(newBits.Length - 1, false);
-                    //else
-                    //    newBits.Set(newBits.Length - 1, true);
                     resultList.Add((((ExternNode)node), nodesBits));
-                }
             }
             return resultList;
         }
@@ -168,7 +149,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         internal void SaveToFile(string path)
         {
             List<string> content = new List<string>();
-           // content.Add($"{BlockSize};{BlockFactor}");
             var leafes = GetAllLeafs();
             foreach (var item in leafes)
             {
@@ -191,11 +171,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures.Trie
         {
             List<(ExternNode, BitArray)> resultList = new List<(ExternNode, BitArray)>();
             var lines = File.ReadAllLines(path);
-            //var results = lines[0].Split(";");
-            //int blockFactor;
-            //int blockSize;
-            //int.TryParse(results[0], out blockSize);
-            //int.TryParse(results[1], out blockFactor);
             foreach (var line in lines)
             {
                 var parts = line.Split(";");

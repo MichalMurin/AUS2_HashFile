@@ -14,25 +14,58 @@ using AUS2_MichalMurin_HashFile.Service;
 
 namespace AUS2_MichalMurin_HashFile.DataStructures
 {
+    /// <summary>
+    /// Trieda pre spravu dynamickeho hesovacieho suboru
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     internal class DynamicHashing<T> : Hashing<T> where T : IData<T>
     {
+        /// <summary>
+        /// Znakovy strom
+        /// </summary>
         internal Trie.Trie trie { get; set; }
+        /// <summary>
+        /// Zoznam prazdnych adries
+        /// </summary>
         internal List<long> EmptyBlocksOffsetes { get; set; }
-
+        /// <summary>
+        /// cesta na ulozenie znakoveho stromu
+        /// </summary>
         internal static string _pathForTrieData { get; } = "Trie.csv";
+        /// <summary>
+        /// Cesta na ulozenie dat prazdnych blokov
+        /// </summary>
         internal static string _pathForEmptyBlocksData { get; } = "EmptyBlocks.csv";
+        /// <summary>
+        /// Konstruktor triedy
+        /// </summary>
+        /// <param name="pFileName">cesta k binarnemu suboru</param>
+        /// <param name="pBlockFactor">blokovaci faktor</param>
         internal DynamicHashing(string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {            
             trie = new Trie.Trie();
             EmptyBlocksOffsetes = new List<long>();
         }
 
+        /// <summary>
+        /// Konstruktor triedy, sluziaci pri nacitani aplikacnych dat pri spusteni aplikacie
+        /// </summary>
+        /// <param name="trie">znakovy strom</param>
+        /// <param name="emptyBlocksOffsetes">zoznam prazdnych adries</param>
+        /// <param name="pFileName">cesta k binarnemu suboru</param>
+        /// <param name="pBlockFactor">blokovaci faktor</param>
         internal DynamicHashing(Trie.Trie trie, List<long> emptyBlocksOffsetes, string pFileName, int pBlockFactor) : base(pFileName, pBlockFactor)
         {
             this.trie = trie;
             EmptyBlocksOffsetes = emptyBlocksOffsetes;
         }
 
+        /// <summary>
+        /// Metoda vracajuca adresu dat v subore
+        /// </summary>
+        /// <param name="hash">hesh hladanych dat</param>
+        /// <returns>adresu dat</returns>
+        /// <exception cref="ArgumentException"></exception>
         protected override long GetOffset(BitArray hash)
         {
             var result = trie.FindExternNode(hash);
@@ -45,6 +78,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
 
         }
 
+        /// <summary>
+        /// Metoda na pridanie dat do struktury
+        /// </summary>
+        /// <param name="data">pridavane data</param>
+        /// <returns>true ak sa vlozenie podarilo</returns>
         internal override bool Insert(T data)
         {
             var hash = data.GetHash();
@@ -79,6 +117,11 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             return false;
 
         }
+        /// <summary>
+        /// Metoda na vymazanie prvku zo struktury
+        /// </summary>
+        /// <param name="data">mazane data</param>
+        /// <returns>true ak bolo mazanie uspesne inak false</returns>
         internal override bool Delete(T data)
         {
             var hash = data.GetHash();
@@ -94,13 +137,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                     // ak sme syn roota, nebudeme mergovat bloky
                     if (exNode.Parent == trie.Root)
                     {
-                        // tento blok aj ked je prazdny, nechavam ho v subore, iba si jeho adresu zapisem do manazmentu volnych blokov, ak 
-                        // mozu byt v subore zapisane dva prazdne bloky ktore su inicializacne??
                         if (exNode.RecordsCount == 0)
                         {
                             HandleEmptyBlocks(block, exNode);
                             return true;
-                            //EmptyBlocksOffsetes.Add(exNode.Offset);
                         }
                         else
                         {
@@ -144,9 +184,16 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
+        /// <summary>
+        /// Metoda ktora zluci dva bloky a ich vrcholy
+        /// </summary>
+        /// <param name="firstNode">prvy vrchol </param>
+        /// <param name="firstBlock">prvy blok</param>
+        /// <param name="secondNode">druhy vrchol</param>
+        /// <param name="secondBlock">druhy blok</param>
+        /// <returns></returns>
         private (ExternNode, Block<T>) MergeBlocks(ExternNode firstNode, Block<T> firstBlock, ExternNode secondNode, Block<T> secondBlock)
         {
-            // prepisovat bloky z toho kde ich je menej tam kde ich je viac , alebo presuvat na nizsiu adresu, aby sa prazdne bloky zdrziavali na konci suboru
             ExternNode toBeEmptyNode, toBeFullNode;
             Block<T> toBeEmptyBlock, toBeFullBlock;
 
@@ -179,12 +226,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             toBeEmptyNode.RecordsCount = toBeEmptyBlock.ValidCount;
             HandleEmptyBlocks(toBeEmptyBlock, toBeEmptyNode);
             return (newExternNode, toBeFullBlock);
-            //TryWriteBlockToFile(newExternNode.Offset, firstBlock);
-            //return true;
 
 
         }
 
+        /// <summary>
+        /// Metoda na spravu volnych blokov
+        /// </summary>
+        /// <param name="emptyBlock">prazdny blok</param>
+        /// <param name="exNode">externy vrchol prazdneho bloku</param>
         private void HandleEmptyBlocks(Block<T> emptyBlock, ExternNode exNode)
         {
             var blockSize = emptyBlock.GetSize();
@@ -194,7 +244,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
                 // zmensim velkost suboru
                 fileLength -= blockSize;
                 // kontrolujem ci neexistuje prazdny blok ktory pred prvotnym zmensenim nebol na konci suboru
-                // TODO dalo by sa to robit efektivnejsie ak by boli adresy zoradene (pouzit BVS??)
                 while (EmptyBlocksOffsetes.Contains(fileLength - blockSize))
                 {
                     fileLength -= blockSize;
@@ -214,6 +263,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             exNode.Offset = -1;
         }
 
+        /// <summary>
+        /// Metoda ktora priradi vrcholu novu volnu adresu
+        /// </summary>
+        /// <param name="node">externy vrchol ziadajuci o adresu</param>
         private void AsignOffsetToNode(ExternNode node)
         {
             long adressForNewBlock = 0;
@@ -231,6 +284,15 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
             node.Offset = adressForNewBlock;
         }
+        /// <summary>
+        /// Metoda, ktora rehesuje data ak je sa vkladane data uz nezmestia do bloku
+        /// </summary>
+        /// <param name="newHash">hash vkladanych dat</param>
+        /// <param name="data">vkladane data</param>
+        /// <param name="exNodeToSplit">externy vrcho ktory sa ide delit</param>
+        /// <param name="currentBit">aktualny bit v strome</param>
+        /// <returns>true ak sa rehesovanie podarilo inak false</returns>
+        /// <exception cref="IndexOutOfRangeException"></exception>
         private bool TryRehashAndInsertData(BitArray newHash, T data, ExternNode exNodeToSplit, int currentBit)
         {
             var FullBlock = TryReadBlockFromFile(exNodeToSplit.Offset);
@@ -244,8 +306,6 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             exNodeToSplit.RecordsCount++;
             Direction newInternNodeDirection;
             
-            //exNodeToSplit.Parent = null;
-            //while (leftNode.RecordsCount > BlockFactor || rightNode.RecordsCount > BlockFactor)
             while (exNodeToSplit.RecordsCount > BlockFactor)
             {
                 currentBit++;
@@ -361,6 +421,9 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             }
         }
 
+        /// <summary>
+        /// Metoda na export aplikacnych dat do csv suboru
+        /// </summary>
         internal override void ExportAppDataToFile()
         {
             trie.SaveToFile(_pathForTrieData);
@@ -372,6 +435,10 @@ namespace AUS2_MichalMurin_HashFile.DataStructures
             File.WriteAllLines(_pathForEmptyBlocksData, offsetsString);
         }
 
+        /// <summary>
+        /// Metoda na nacitanie aplikacnych dat dynamickeho suboru
+        /// </summary>
+        /// <returns>Znakovy strom trie a zoznam volnych adries</returns>
         internal static (Trie.Trie, List<long>) LoadDynamicDataFromFile()
         {
             var itemsForTrie = Trie.Trie.GetLeafesFromFile(_pathForTrieData);
