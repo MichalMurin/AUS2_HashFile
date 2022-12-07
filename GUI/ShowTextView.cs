@@ -27,5 +27,10 @@ namespace GUI
             ListBoxShow.Items.Clear();
             ListBoxShow.Items.Add(text);
         }
+
+        private void ListBoxShow_SelectedIndexChanged(object sender, EventArgs e)
+        {
+           Clipboard.SetText(ListBoxShow.Items[ListBoxShow.SelectedIndex].ToString());
+        }
     }
 }

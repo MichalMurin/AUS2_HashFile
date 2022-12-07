@@ -39,6 +39,7 @@
             this.ListBoxShow.Name = "ListBoxShow";
             this.ListBoxShow.Size = new System.Drawing.Size(1444, 764);
             this.ListBoxShow.TabIndex = 0;
+            this.ListBoxShow.SelectedIndexChanged += new System.EventHandler(this.ListBoxShow_SelectedIndexChanged);
             // 
             // ShowTextView
             // 

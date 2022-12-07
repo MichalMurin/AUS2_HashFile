@@ -180,7 +180,12 @@ namespace AUS2_MichalMurin_HashFile.Models
         public List<string> GetStrings()
         {
             List<string> result = new List<string>();
-            result.Add($"Pacient {Name} {Surename}, rodne cislo: {BirthNum},narodeny: {BirthDate.ToString("dd.MM.yyyy")} poistovna: {HelathInsuranceCode}");
+            result.Add($"Pacient {Name} {Surename}, narodeny: {BirthDate.ToString("dd.MM.yyyy")} poistovna: {HelathInsuranceCode}");
+            if(!string.IsNullOrEmpty(BirthNum))
+            {
+                result.Add($"Rodne cislo:");
+                result.Add($"{BirthNum}");
+            }
             result.Add(" Hospitalizacie:");
             foreach (var hosp in Hospitalizations)
             {
